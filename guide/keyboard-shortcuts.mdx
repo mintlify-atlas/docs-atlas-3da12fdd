@@ -22,7 +22,7 @@ Shortcuts use `Cmd` on macOS and `Ctrl` on Windows/Linux unless otherwise specif
 
 Defined in the File menu:
 
-```javascript
+```typescript
 // From electron/main.ts
 {
   label: 'Open Folder',
@@ -44,7 +44,7 @@ This shortcut triggers Electron's native folder picker dialog.
 
 Registered as a global shortcut:
 
-```javascript
+```typescript
 // From electron/main.ts
 globalShortcut.register('Command+B', () => { 
   mainWindow?.webContents.send('toggle-sidebar')
@@ -53,7 +53,7 @@ globalShortcut.register('Command+B', () => {
 
 Also available in the View menu:
 
-```javascript
+```typescript
 {
   label: 'Toggle Sidebar',
   accelerator: 'Command+B',
@@ -65,7 +65,7 @@ Also available in the View menu:
 
 Registered as a global shortcut:
 
-```javascript
+```typescript
 // From electron/main.ts
 globalShortcut.register('Command+Shift+T', () => { 
   mainWindow?.webContents.send('toggle-terminal')
@@ -74,7 +74,7 @@ globalShortcut.register('Command+Shift+T', () => {
 
 Also available in the View menu:
 
-```javascript
+```typescript
 {
   label: 'Toggle Terminal',
   accelerator: 'Command+Shift+T',
@@ -126,7 +126,7 @@ These shortcuts are provided by CodeMirror and work within the editor:
 
 Available in the View menu:
 
-```javascript
+```typescript
 // From electron/main.ts
 {
   label: 'View',
@@ -146,7 +146,7 @@ Available in the View menu:
 
 Defined in the File menu:
 
-```javascript
+```typescript
 // From electron/main.ts
 {
   label: 'File',

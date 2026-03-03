@@ -58,7 +58,10 @@
             "pages": [
               "api/components/editor",
               "api/components/sidebar",
-              "api/components/terminal"
+              "api/components/terminal",
+              "api/components/theme-selector",
+              "api/components/info-bar",
+              "api/components/open-files"
             ]
           },
           {
@@ -66,7 +69,8 @@
             "pages": [
               "api/themes",
               "api/context",
-              "api/ipc-channels"
+              "api/ipc-channels",
+              "api/utilities"
             ]
           }
         ]

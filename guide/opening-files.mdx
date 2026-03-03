@@ -84,7 +84,7 @@ Click on any tab to make that file active in the editor. The editor will:
 
 If you close all tabs, the editor displays a helpful message:
 
-```
+```bash
 Open a folder (File → Open Folder or Ctrl+O)
 ```
 
@@ -94,7 +94,7 @@ This reminds you how to get started with a new project.
 
 Code Editor Thing uses Electron's IPC (Inter-Process Communication) to handle file operations:
 
-```javascript
+```typescript
 // From electron/main.ts
 async function openFolder() {
   const result = await dialog.showOpenDialog(mainWindow!, {

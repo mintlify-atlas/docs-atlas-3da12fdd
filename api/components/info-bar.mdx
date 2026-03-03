@@ -1,0 +1,102 @@
+---
+title: InfoBar
+description: Status bar component displaying theme selector and editor information
+---
+
+The `InfoBar` component is a status bar that appears at the bottom of the editor, providing theme selection controls and using the statusbar colors from the current theme.
+
+## Usage
+
+```tsx
+import InfoBar from '@/components/info-bar';
+
+function EditorLayout() {
+  return (
+    <div>
+      <Editor />
+      <InfoBar />
+    </div>
+  );
+}
+```
+
+## Features
+
+- Fixed height status bar (28px)
+- Dynamically styled with current theme's statusbar colors
+- Contains ThemeSelector component
+- Adapts background and foreground colors based on active theme
+
+## Props
+
+The InfoBar component doesn't accept any props. It uses the `useEditor()` hook to access the current theme configuration.
+
+## Context Dependencies
+
+<ParamField path="currentTheme" type="ThemeConfig">
+  Complete theme configuration object with statusbar and body color definitions
+</ParamField>
+
+## Implementation
+
+```tsx title="src/components/info-bar.tsx"
+import { useEditor } from "../lib/editor-context";
+import ThemeSelector from "./theme-selector";
+
+export default function InfoBar() {
+  const { currentTheme } = useEditor();
+
+  return (
+    <div
+      className="h-[28px] w-full"
+      style={{
+        backgroundColor: currentTheme.body?.bg,
+      }}
+    >
+      <div
+        className="w-full px-2 text-[11px] h-full rounded-md flex items-center justify-between"
+        style={{
+          backgroundColor: currentTheme.statusbar.bg,
+          color: currentTheme.statusbar.fg,
+        }}
+      >
+        <ThemeSelector />
+      </div>
+    </div>
+  );
+}
+```
+
+## Styling
+
+The InfoBar uses inline styles to apply theme colors dynamically:
+
+- **Outer container**: Uses `currentTheme.body.bg` background
+- **Inner bar**: Uses `currentTheme.statusbar.bg` and `currentTheme.statusbar.fg` for background and text color
+- **Text size**: 11px for compact display
+- **Padding**: 2px horizontal spacing
+
+## Theme Integration
+
+The statusbar colors are defined in each theme configuration:
+
+```typescript
+{
+  statusbar: {
+    bg: "#007acc",  // Background color
+    fg: "#ffffff"   // Foreground/text color
+  }
+}
+```
+
+Different themes have distinct statusbar colors:
+- **Dark theme**: Blue background (#007acc)
+- **GitHub Dark**: Green background (#238636)
+- **Dracula**: Purple/gray background (#6272a4)
+- **One Dark Pro**: Purple background (#c678dd)
+
+## Related
+
+- [ThemeSelector](/api/components/theme-selector) - Theme dropdown component
+- [Theme System](/api/themes) - Theme configuration and colors
+- [EditorContext](/api/context) - State management integration

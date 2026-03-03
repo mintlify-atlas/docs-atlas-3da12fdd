@@ -1,0 +1,297 @@
+---
+title: Utilities
+description: Helper functions for editor configuration and language detection
+---
+
+The utilities module (`src/lib/utils.ts`) provides essential helper functions for CodeMirror editor configuration, language detection, and syntax highlighting setup.
+
+## getLanguageExtension
+
+Detects and returns the appropriate CodeMirror language extension based on file extension.
+
+<ParamField path="filename" type="string" required>
+  Name of the file (e.g., "App.tsx", "script.py")
+</ParamField>
+
+<ResponseField name="return" type="LanguageSupport | null">
+  CodeMirror language extension, or null if no matching language
+</ResponseField>
+
+### Supported Languages
+
+| Extension | Language | JSX/TypeScript Support |
+|-----------|----------|------------------------|
+| `.js`, `.jsx`, `.mjs`, `.cjs` | JavaScript | JSX enabled |
+| `.ts`, `.tsx` | TypeScript | JSX + TypeScript |
+| `.py` | Python | - |
+| `.html`, `.htm` | HTML | - |
+| `.css` | CSS | - |
+| `.json` | JSON | - |
+| `.md`, `.markdown` | Markdown | - |
+| `.rs` | Rust | - |
+
+### Usage
+
+```typescript
+import { getLanguageExtension } from '@/lib/utils';
+
+const langExt = getLanguageExtension('App.tsx');
+if (langExt) {
+  extensions.push(langExt);
+}
+```
+
+### Implementation
+
+```typescript title="src/lib/utils.ts" {12-40}
+export function getLanguageExtension(filename: string) {
+  const ext = filename.split(".").pop()?.toLowerCase();
+  switch (ext) {
+    case "js":
+    case "jsx":
+    case "mjs":
+    case "cjs":
+      return javascript({ jsx: true });
+    case "ts":
+    case "tsx":
+      return javascript({ jsx: true, typescript: true });
+    case "py":
+      return python();
+    case "html":
+    case "htm":
+      return html();
+    case "css":
+      return css();
+    case "json":
+      return json();
+    case "md":
+    case "markdown":
+      return markdown();
+    case "rs":
+      return rust();
+    default:
+      return null;
+  }
+}
+```
+
+## createThemeExtension
+
+Creates a CodeMirror theme extension with custom background and foreground colors.
+
+<ParamField path="bg" type="string" required>
+  Background color (hex format, e.g., "#1e1e1e")
+</ParamField>
+
+<ParamField path="fg" type="string" required>
+  Foreground/text color (hex format, e.g., "#d4d4d4")
+</ParamField>
+
+<ResponseField name="return" type="Extension">
+  CodeMirror EditorView.theme extension
+</ResponseField>
+
+### Theme Properties
+
+The extension customizes the following editor elements:
+
+- **Editor container**: Height, background, color, font size
+- **Scroller**: Font family, line height, padding
+- **Gutters**: Background, color, opacity
+- **Active line**: Transparent background
+- **Content**: Caret color, line height
+- **Cursor**: Border color
+
+### Usage
+
+```typescript
+import { createThemeExtension } from '@/lib/utils';
+
+const themeExt = createThemeExtension('#1e1e1e', '#d4d4d4');
+const state = EditorState.create({
+  extensions: [basicSetup, themeExt]
+});
+```
+
+### Default Styles
+
+```typescript
+{
+  "&": {
+    height: "100%",
+    backgroundColor: bg,
+    color: fg,
+    fontSize: "14px",
+  },
+  ".cm-scroller": {
+    fontFamily: "'Geist Mono', 'Fira Code', 'JetBrains Mono', Consolas, 'Courier New', monospace",
+    lineHeight: "21px",
+    padding: "12px",
+  },
+  ".cm-gutters": {
+    backgroundColor: bg,
+    color: fg,
+    opacity: "0.5",
+  },
+  ".cm-content": {
+    caretColor: fg,
+    lineHeight: "28px",
+  }
+}
+```
+
+## createSyntaxHighlighting
+
+Creates a CodeMirror syntax highlighting extension with custom colors for different token types.
+
+<ParamField path="syntax" type="SyntaxColors" required>
+  Object containing color definitions for all syntax token types
+</ParamField>
+
+<ResponseField name="return" type="Extension">
+  CodeMirror syntaxHighlighting extension
+</ResponseField>
+
+### SyntaxColors Type
+
+```typescript
+interface SyntaxColors {
+  keyword: string;    // Language keywords (if, function, class)
+  string: string;     // String literals
+  comment: string;    // Comments
+  number: string;     // Numbers and booleans
+  function: string;   // Function names
+  operator: string;   // Operators (+, -, *, etc.)
+  variable: string;   // Variable names
+  type: string;       // Type names and classes
+  property: string;   // Object properties
+  bracket: string;    // Brackets and braces
+  tag: string;        // HTML/JSX tags
+  attribute: string;  // HTML/JSX attributes
+  heading: string;    // Markdown headings
+  emphasis: string;   // Markdown italic
+  strong: string;     // Markdown bold
+  link: string;       // Markdown links
+}
+```
+
+### Usage
+
+```typescript
+import { createSyntaxHighlighting } from '@/lib/utils';
+import { currentTheme } from '@/lib/editor-context';
+
+const syntaxExt = createSyntaxHighlighting(currentTheme.syntax);
+const state = EditorState.create({
+  extensions: [basicSetup, syntaxExt]
+});
+```
+
+### Token Tag Mapping
+
+The function maps Lezer highlight tags to colors:
+
+| Tag | Color Property | Additional Styles |
+|-----|---------------|-------------------|
+| `t.keyword` | `syntax.keyword` | - |
+| `t.string` | `syntax.string` | - |
+| `t.comment` | `syntax.comment` | `fontStyle: "italic"` |
+| `t.number` | `syntax.number` | - |
+| `t.function(t.variableName)` | `syntax.function` | - |
+| `t.variableName` | `syntax.variable` | - |
+| `t.typeName` | `syntax.type` | - |
+| `t.heading` | `syntax.heading` | `fontWeight: "bold"` |
+| `t.emphasis` | `syntax.emphasis` | `fontStyle: "italic"` |
+| `t.strong` | `syntax.strong` | `fontWeight: "bold"` |
+| `t.link` | `syntax.link` | `textDecoration: "underline"` |
+
+### Implementation Example
+
+```typescript title="src/lib/utils.ts" {84-130}
+export function createSyntaxHighlighting(syntax: SyntaxColors) {
+  return syntaxHighlighting(
+    HighlightStyle.define([
+      { tag: t.keyword, color: syntax.keyword },
+      { tag: t.string, color: syntax.string },
+      { tag: t.comment, color: syntax.comment, fontStyle: "italic" },
+      { tag: t.number, color: syntax.number },
+      { tag: t.function(t.variableName), color: syntax.function },
+      { tag: t.operator, color: syntax.operator },
+      { tag: t.variableName, color: syntax.variable },
+      { tag: t.typeName, color: syntax.type },
+      { tag: t.propertyName, color: syntax.property },
+      { tag: t.bracket, color: syntax.bracket },
+      { tag: t.tagName, color: syntax.tag },
+      { tag: t.attributeName, color: syntax.attribute },
+      { tag: t.heading, color: syntax.heading, fontWeight: "bold" },
+      { tag: t.emphasis, color: syntax.emphasis, fontStyle: "italic" },
+      { tag: t.strong, color: syntax.strong, fontWeight: "bold" },
+      { tag: t.link, color: syntax.link, textDecoration: "underline" },
+      { tag: t.bool, color: syntax.number },
+      { tag: t.null, color: syntax.number },
+      { tag: t.regexp, color: syntax.string },
+      { tag: t.escape, color: syntax.number },
+      { tag: t.className, color: syntax.type },
+      { tag: t.definition(t.variableName), color: syntax.function },
+      { tag: t.self, color: syntax.keyword },
+      { tag: t.namespace, color: syntax.property },
+    ])
+  );
+}
+```
+
+## Complete Integration Example
+
+Combining all utilities in the Editor component:
+
+```typescript title="src/components/Editor.tsx"
+import { 
+  getLanguageExtension, 
+  createThemeExtension, 
+  createSyntaxHighlighting 
+} from "@/lib/utils";
+
+const langExt = getLanguageExtension(activeFile.name);
+const extensions = [
+  basicSetup,
+  history(),
+  keymap.of([...defaultKeymap, ...historyKeymap]),
+  createThemeExtension(currentTheme.editor.bg, currentTheme.editor.fg),
+  createSyntaxHighlighting(currentTheme.syntax),
+  EditorView.updateListener.of((update) => {
+    if (update.docChanged) {
+      handleContentChange(update.state.doc.toString());
+    }
+  }),
+];
+
+if (langExt) {
+  extensions.push(langExt);
+}
+
+const state = EditorState.create({
+  doc: activeFile.content,
+  extensions,
+});
+```
+
+## Dependencies
+
+These utilities depend on the following CodeMirror packages:
+
+- `@codemirror/lang-javascript` - JavaScript/TypeScript support
+- `@codemirror/lang-python` - Python support
+- `@codemirror/lang-html` - HTML support
+- `@codemirror/lang-css` - CSS support
+- `@codemirror/lang-json` - JSON support
+- `@codemirror/lang-markdown` - Markdown support
+- `@codemirror/lang-rust` - Rust support
+- `@codemirror/language` - Syntax highlighting
+- `@lezer/highlight` - Highlight tags
+- `codemirror` - EditorView
+
+## Related
+
+- [Editor Component](/api/components/editor) - Main usage context
+- [Theme System](/api/themes) - Color configuration
+- [EditorContext](/api/context) - State integration

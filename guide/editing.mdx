@@ -109,7 +109,7 @@ When you save a file:
 3. Writes the content to disk using Node.js file system APIs
 4. Confirms the save operation
 
-```javascript
+```typescript
 // From electron/main.ts
 ipcMain.handle('save-file', async (_event, filePath: string, content: string) => {
   try {

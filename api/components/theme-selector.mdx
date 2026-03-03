@@ -1,0 +1,95 @@
+---
+title: ThemeSelector
+description: Dropdown component for selecting editor themes
+---
+
+The `ThemeSelector` component provides a dropdown interface for users to switch between available editor themes. It integrates with the EditorContext to update the selected theme.
+
+## Usage
+
+```tsx
+import ThemeSelector from '@/components/theme-selector';
+
+function InfoBar() {
+  return (
+    <div>
+      <ThemeSelector />
+    </div>
+  );
+}
+```
+
+## Features
+
+- Displays all available themes from the `THEMES` array
+- Updates the editor theme in real-time when selection changes
+- Synchronized with EditorContext state
+- Visual paintbrush icon indicator
+- Transparent background that adapts to current theme
+
+## Props
+
+The ThemeSelector component doesn't accept any props. It uses the `useEditor()` hook internally to access and update theme state.
+
+## Context Dependencies
+
+<ParamField path="selectedTheme" type="string">
+  Current theme ID from EditorContext
+</ParamField>
+
+<ParamField path="setSelectedTheme" type="(theme: string) => void">
+  Function to update the selected theme
+</ParamField>
+
+## Implementation
+
+The component renders a native `<select>` element with options generated from the `THEMES` array:
+
+```tsx title="src/components/theme-selector.tsx"
+import { useEditor } from "@/lib/editor-context";
+import { THEMES } from "@/lib/themes";
+import { Paintbrush } from "lucide-react";
+
+export default function ThemeSelector() {
+  const { selectedTheme, setSelectedTheme } = useEditor();
+  return (
+    <span className="flex items-center">
+      <Paintbrush size={12} />
+      <select
+        value={selectedTheme}
+        onChange={(e) => setSelectedTheme(e.target.value)}
+        className="px-2 w-md py-1 bg-transparent rounded outline-none cursor-pointer"
+      >
+        {THEMES.map((theme) => (
+          <option key={theme.id} value={theme.id}>
+            {theme.name}
+          </option>
+        ))}
+      </select>
+    </span>
+  );
+}
+```
+
+## Integration Example
+
+ThemeSelector is typically used within the InfoBar component at the bottom of the editor:
+
+```tsx
+import InfoBar from '@/components/info-bar';
+
+function EditorLayout() {
+  return (
+    <div>
+      <Editor />
+      <InfoBar /> {/* Contains ThemeSelector */}
+    </div>
+  );
+}
+```
+
+## Related
+
+- [Theme System](/api/themes) - Available themes and configuration
+- [EditorContext](/api/context) - State management integration
+- [InfoBar Component](/api/components/info-bar) - Parent component
