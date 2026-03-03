@@ -1,0 +1,251 @@
+---
+title: Terminal
+description: Integrated terminal component using xterm.js and node-pty for shell access
+---
+
+The `Terminal` component provides an embedded terminal interface using xterm.js, connected to a real shell process via node-pty in the Electron main process.
+
+## Usage
+
+```tsx
+import Terminal from '@/components/Terminal';
+
+function App() {
+  return (
+    <div className="terminal-container">
+      <Terminal />
+    </div>
+  );
+}
+```
+
+## Features
+
+### Terminal Initialization
+
+The terminal is configured with xterm.js options:
+
+```tsx
+const term = new XTerm({
+  cursorBlink: true,
+  fontSize: 13,
+  fontFamily: "Monaco, Menlo, Courier New, monospace",
+  theme: { background: "#1e1e1e", foreground: "#d4d4d4" },
+});
+```
+
+### Fit Addon
+
+The FitAddon automatically resizes the terminal to fit its container:
+
+```tsx
+const fitAddon = new FitAddon();
+term.loadAddon(fitAddon);
+term.open(terminalRef.current);
+fitAddon.fit();
+```
+
+### Bidirectional Communication
+
+The terminal sends user input to the shell and receives output:
+
+**Output (Shell → Terminal)**:
+```tsx
+window.electronAPI.onTerminalData((data: string) => {
+  term.write(data);
+});
+```
+
+**Input (Terminal → Shell)**:
+```tsx
+term.onData((data) => {
+  window.electronAPI.terminalInput(data);
+});
+```
+
+## Configuration
+
+### XTerm Options
+
+<ParamField path="cursorBlink" type="boolean" default="true">
+  Enable blinking cursor animation
+</ParamField>
+
+<ParamField path="fontSize" type="number" default="13">
+  Font size in pixels
+</ParamField>
+
+<ParamField path="fontFamily" type="string" default="Monaco, Menlo, Courier New, monospace">
+  CSS font family for terminal text
+</ParamField>
+
+<ParamField path="theme" type="ITheme">
+  Color theme object
+  
+  ```typescript
+  {
+    background: "#1e1e1e",
+    foreground: "#d4d4d4"
+  }
+  ```
+</ParamField>
+
+## IPC Channels
+
+The Terminal communicates with the Electron main process through three IPC channels:
+
+### create-terminal
+
+```typescript
+window.electronAPI.createTerminal(): void
+```
+
+Creates a new pseudo-terminal (pty) process in the main process.
+
+**Channel**: `create-terminal` (send)
+
+**Usage**:
+```tsx
+if (window.electronAPI?.createTerminal) {
+  window.electronAPI.createTerminal();
+}
+```
+
+### terminal-data
+
+```typescript
+window.electronAPI.onTerminalData(callback: (data: string) => void): void
+```
+
+Listens for output from the shell process.
+
+**Channel**: `terminal-data` (receive)
+
+**Parameters**:
+- `callback`: Function called with shell output data
+
+**Usage**:
+```tsx
+window.electronAPI.onTerminalData((data: string) => {
+  term.write(data);
+});
+```
+
+### terminal-input
+
+```typescript
+window.electronAPI.terminalInput(data: string): void
+```
+
+Sends user input to the shell process.
+
+**Channel**: `terminal-input` (send)
+
+**Parameters**:
+- `data`: User input string (keystrokes, commands, etc.)
+
+**Usage**:
+```tsx
+term.onData((data) => {
+  console.log("term data", data);
+  window.electronAPI.terminalInput(data);
+});
+```
+
+## Integration with node-pty
+
+The Electron main process uses node-pty to spawn a real shell process. The Terminal component acts as the frontend UI, while the main process handles:
+
+- Creating the pty process with `node-pty`
+- Forwarding input from renderer to pty
+- Forwarding output from pty to renderer
+- Handling pty lifecycle (spawn, resize, exit)
+
+## State Management
+
+The component uses React refs to maintain terminal instances:
+
+```tsx
+const terminalRef = useRef<HTMLDivElement>(null);
+const xtermRef = useRef<XTerm | null>(null);
+```
+
+### Lifecycle
+
+1. **Mount**: Create XTerm instance, load FitAddon, create pty process
+2. **Active**: Handle bidirectional data flow
+3. **Unmount**: Terminal cleanup is handled automatically by React
+
+## Styling
+
+The terminal container uses full width and height:
+
+```tsx
+<div className="w-full h-full" ref={terminalRef} />
+```
+
+CSS is imported from xterm.js:
+```tsx
+import "@xterm/xterm/css/xterm.css";
+```
+
+## Example: Terminal with Custom Theme
+
+```tsx
+import { Terminal as XTerm } from "@xterm/xterm";
+import { FitAddon } from "@xterm/addon-fit";
+
+const term = new XTerm({
+  cursorBlink: true,
+  fontSize: 14,
+  fontFamily: "JetBrains Mono, monospace",
+  theme: {
+    background: "#282c34",
+    foreground: "#abb2bf",
+    cursor: "#528bff",
+  },
+});
+
+const fitAddon = new FitAddon();
+term.loadAddon(fitAddon);
+term.open(containerElement);
+fitAddon.fit();
+```
+
+## Example: Handling Terminal Output
+
+```tsx
+window.electronAPI.onTerminalData((data: string) => {
+  // Write output to terminal
+  term.write(data);
+  
+  // Optional: Log or process output
+  console.log("Received:", data);
+});
+```
+
+## Example: Sending Commands
+
+```tsx
+// Send a command programmatically
+const runCommand = (cmd: string) => {
+  window.electronAPI.terminalInput(cmd + '\r');
+};
+
+runCommand('ls -la');
+runCommand('npm install');
+```
+
+## Reference
+
+**Source**: `src/components/Terminal.tsx`
+
+**Dependencies**:
+- `@xterm/xterm` - Terminal emulator core
+- `@xterm/addon-fit` - Auto-fit terminal to container
+- `node-pty` (main process) - Pseudo-terminal spawning
+
+**IPC Channels**:
+- `create-terminal` - Spawn new pty process
+- `terminal-data` - Receive shell output
+- `terminal-input` - Send user input to shell

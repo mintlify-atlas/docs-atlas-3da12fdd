@@ -1,0 +1,402 @@
+---
+title: 'IPC Channels'
+description: 'Inter-Process Communication between Electron main and renderer processes'
+---
+
+## Overview
+
+The IPC (Inter-Process Communication) system enables communication between the Electron main process and the React renderer process. All channels are exposed through the `window.electronAPI` object in the renderer.
+
+<Info>
+  IPC channels are only available when running in Electron. Check `isElectron` from the EditorContext before using these APIs.
+</Info>
+
+## Channel Types
+
+There are two types of IPC channels:
+
+- **Handle channels** (`ipcMain.handle`) - Async request/response pattern, invoked with `ipcRenderer.invoke`
+- **Send channels** (`ipcMain.on`) - One-way messages, sent with `ipcRenderer.send`
+
+## Handle Channels (Async)
+
+### read-directory
+
+Reads the contents of a directory and returns an array of files and folders.
+
+<ParamField path="dirPath" type="string" required>
+  Absolute path to the directory to read
+</ParamField>
+
+<ResponseField name="return" type="Promise<FileItem[]>">
+  Array of file and directory items, sorted with directories first, then alphabetically
+  
+  <Expandable title="FileItem structure">
+    <ResponseField name="name" type="string">
+      File or directory name
+    </ResponseField>
+    
+    <ResponseField name="path" type="string">
+      Absolute file system path
+    </ResponseField>
+    
+    <ResponseField name="isDirectory" type="boolean">
+      Whether this item is a directory
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+```typescript
+const items = await window.electronAPI.readDirectory('/Users/username/projects');
+console.log(items);
+// [
+//   { name: 'src', path: '/Users/username/projects/src', isDirectory: true },
+//   { name: 'package.json', path: '/Users/username/projects/package.json', isDirectory: false }
+// ]
+```
+
+### read-file
+
+Reads the contents of a file as a UTF-8 string.
+
+<ParamField path="filePath" type="string" required>
+  Absolute path to the file to read
+</ParamField>
+
+<ResponseField name="return" type="Promise<string>">
+  File contents as a string, or empty string if read fails
+</ResponseField>
+
+```typescript
+const content = await window.electronAPI.readFile('/path/to/file.txt');
+console.log(content); // File contents
+```
+
+### save-file
+
+Writes content to a file, overwriting existing contents.
+
+<ParamField path="filePath" type="string" required>
+  Absolute path where the file should be saved
+</ParamField>
+
+<ParamField path="content" type="string" required>
+  Content to write to the file (UTF-8)
+</ParamField>
+
+<ResponseField name="return" type="Promise<boolean>">
+  `true` if save succeeded, `false` if it failed
+</ResponseField>
+
+```typescript
+const success = await window.electronAPI.saveFile(
+  '/path/to/file.txt',
+  'Hello, world!'
+);
+
+if (success) {
+  console.log('File saved successfully');
+}
+```
+
+### get-folder
+
+Retrieves the currently open folder path.
+
+<ResponseField name="return" type="Promise<string | null>">
+  Current folder path, or `null` if no folder is open
+</ResponseField>
+
+```typescript
+const folder = await window.electronAPI.getFolder();
+if (folder) {
+  console.log('Current workspace:', folder);
+}
+```
+
+## Send Channels (One-way)
+
+### create-terminal
+
+Creates a new pseudo-terminal (PTY) process. The terminal will emit data via the `terminal-data` event.
+
+```typescript
+window.electronAPI.createTerminal();
+
+// Listen for terminal output
+window.electronAPI.onTerminalData((data) => {
+  console.log('Terminal output:', data);
+});
+```
+
+<Info>
+  Creates a shell process using PowerShell on Windows or the user's default shell on Unix systems. The working directory defaults to the user's home directory.
+</Info>
+
+### terminal-input
+
+Sends input to the active terminal process.
+
+<ParamField path="data" type="string" required>
+  Input data to send to the terminal (e.g., commands, keystrokes)
+</ParamField>
+
+```typescript
+// Send a command
+window.electronAPI.terminalInput('ls -la\r');
+
+// Send Ctrl+C
+window.electronAPI.terminalInput('\x03');
+```
+
+## Receive Channels (Events)
+
+These channels listen for events from the main process.
+
+### folder-opened
+
+Fired when a folder is opened via the File menu.
+
+<ParamField path="callback" type="(path: string) => void" required>
+  Function called with the opened folder path
+</ParamField>
+
+```typescript
+window.electronAPI.onFolderOpened((folderPath) => {
+  console.log('Opened folder:', folderPath);
+  // Load folder contents
+});
+```
+
+### toggle-sidebar
+
+Fired when the sidebar toggle shortcut (Cmd+B / Ctrl+B) is pressed.
+
+<ParamField path="callback" type="() => void" required>
+  Function called when sidebar should be toggled
+</ParamField>
+
+```typescript
+window.electronAPI.onToggleSidebar(() => {
+  console.log('Toggle sidebar');
+  setSidebarVisible(prev => !prev);
+});
+```
+
+### toggle-terminal
+
+Fired when the terminal toggle shortcut (Cmd+Shift+T / Ctrl+Shift+T) is pressed.
+
+<ParamField path="callback" type="() => void" required>
+  Function called when terminal should be toggled
+</ParamField>
+
+```typescript
+window.electronAPI.onToggleTerminal(() => {
+  console.log('Toggle terminal');
+  setTerminalVisible(prev => !prev);
+});
+```
+
+### terminal-data
+
+Fired when the terminal process outputs data.
+
+<ParamField path="callback" type="(data: string) => void" required>
+  Function called with terminal output data
+</ParamField>
+
+```typescript
+window.electronAPI.onTerminalData((data) => {
+  // Append to terminal display
+  terminalElement.textContent += data;
+});
+```
+
+## ElectronAPI Interface
+
+Complete TypeScript interface for the exposed API:
+
+```typescript
+interface ElectronAPI {
+  // File system operations
+  readDirectory: (dirPath: string) => Promise<FileItem[]>;
+  readFile: (filePath: string) => Promise<string>;
+  saveFile: (filePath: string, content: string) => Promise<boolean>;
+  getFolder: () => Promise<string | null>;
+  
+  // Event listeners
+  onFolderOpened: (callback: (path: string) => void) => void;
+  onToggleSidebar: (callback: () => void) => void;
+  onToggleTerminal: (callback: () => void) => void;
+  
+  // Terminal operations
+  createTerminal: () => void;
+  onTerminalData: (callback: (data: string) => void) => void;
+  terminalInput: (data: string) => void;
+}
+
+// Available at:
+declare global {
+  interface Window {
+    electronAPI?: ElectronAPI;
+  }
+}
+```
+
+## Usage Examples
+
+### Complete File Manager
+
+```typescript
+import { useState, useEffect } from 'react';
+
+function FileManager() {
+  const [folder, setFolder] = useState<string | null>(null);
+  const [files, setFiles] = useState<FileItem[]>([]);
+  
+  useEffect(() => {
+    if (!window.electronAPI) return;
+    
+    // Listen for folder open events
+    window.electronAPI.onFolderOpened(async (path) => {
+      setFolder(path);
+      const items = await window.electronAPI!.readDirectory(path);
+      setFiles(items);
+    });
+    
+    // Load initial folder
+    window.electronAPI.getFolder().then(async (path) => {
+      if (path) {
+        setFolder(path);
+        const items = await window.electronAPI!.readDirectory(path);
+        setFiles(items);
+      }
+    });
+  }, []);
+  
+  const handleFileClick = async (item: FileItem) => {
+    if (item.isDirectory) {
+      const items = await window.electronAPI!.readDirectory(item.path);
+      setFiles(items);
+    } else {
+      const content = await window.electronAPI!.readFile(item.path);
+      console.log('File content:', content);
+    }
+  };
+  
+  return (
+    <div>
+      <h3>{folder || 'No folder open'}</h3>
+      <ul>
+        {files.map(item => (
+          <li key={item.path} onClick={() => handleFileClick(item)}>
+            {item.isDirectory ? '📁' : '📄'} {item.name}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+### Complete Terminal Component
+
+```typescript
+import { useEffect, useRef, useState } from 'react';
+
+function Terminal() {
+  const [output, setOutput] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  useEffect(() => {
+    if (!window.electronAPI) return;
+    
+    // Create terminal session
+    window.electronAPI.createTerminal();
+    
+    // Listen for output
+    window.electronAPI.onTerminalData((data) => {
+      setOutput(prev => prev + data);
+    });
+  }, []);
+  
+  const handleCommand = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && inputRef.current) {
+      const command = inputRef.current.value;
+      window.electronAPI?.terminalInput(command + '\r');
+      inputRef.current.value = '';
+    }
+  };
+  
+  return (
+    <div>
+      <pre>{output}</pre>
+      <input 
+        ref={inputRef}
+        onKeyDown={handleCommand}
+        placeholder="Enter command..."
+      />
+    </div>
+  );
+}
+```
+
+### Keyboard Shortcuts Handler
+
+```typescript
+import { useEffect } from 'react';
+import { useEditor } from './lib/editor-context';
+
+function KeyboardShortcuts() {
+  const { setSidebarVisible, setTerminalVisible } = useEditor();
+  
+  useEffect(() => {
+    if (!window.electronAPI) return;
+    
+    // Cmd+B / Ctrl+B - Toggle sidebar
+    window.electronAPI.onToggleSidebar(() => {
+      setSidebarVisible(prev => !prev);
+    });
+    
+    // Cmd+Shift+T / Ctrl+Shift+T - Toggle terminal
+    window.electronAPI.onToggleTerminal(() => {
+      setTerminalVisible(prev => !prev);
+    });
+  }, [setSidebarVisible, setTerminalVisible]);
+  
+  return null; // No UI, just event handlers
+}
+```
+
+## Security Considerations
+
+<Warning>
+  The preload script uses `contextBridge` to safely expose IPC methods to the renderer process. Never disable `contextIsolation` or enable `nodeIntegration` in production.
+</Warning>
+
+All file system operations are validated in the main process. The renderer cannot:
+
+- Access files outside the opened workspace
+- Execute arbitrary system commands
+- Access Node.js APIs directly
+
+## Error Handling
+
+Handle channels return safe defaults on error:
+
+- `read-directory` returns empty array `[]`
+- `read-file` returns empty string `""`
+- `save-file` returns `false`
+- `get-folder` returns `null`
+
+```typescript
+try {
+  const content = await window.electronAPI!.readFile('/nonexistent.txt');
+  if (content === '') {
+    console.log('File could not be read');
+  }
+} catch (error) {
+  // IPC errors are caught internally
+}
+```

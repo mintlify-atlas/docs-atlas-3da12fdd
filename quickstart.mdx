@@ -1,80 +1,332 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get up and running with Code Editor Thing in minutes
 ---
 
-## Get started in three steps
+# Quickstart Guide
 
-Get your documentation site running locally and make your first customization.
+This guide will walk you through running Code Editor Thing for the first time, opening a project, editing files, and customizing your theme.
 
-### Step 1: Set up your local environment
+<Tip>
+  Make sure you've completed the [installation steps](/installation) before continuing.
+</Tip>
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+## Running the Application
+
+<Steps>
+  <Step title="Start Development Mode">
+    From your project directory, run:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    ```bash
+    npm run electron:dev
+    ```
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    This command does three things:
+    1. Builds the Electron main process (`electron/main.ts` → `dist-electron/main.cjs`)
+    2. Starts the Vite development server on `http://localhost:5173`
+    3. Launches the Electron window
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    <Note>
+      The first launch may take a few seconds while Vite optimizes dependencies.
+    </Note>
+    
+    You should see a window appear with the Code Editor Thing interface.
+  </Step>
+  
+  <Step title="Verify Electron is Running">
+    If you see this message in the window:
+    
+    ```
+    Please run this app in Electron to use all features.
+    ```
+    
+    The app detected it's not running in Electron. Make sure you used `npm run electron:dev` instead of `npm run dev`.
+  </Step>
+</Steps>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## Opening Your First Folder
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+<Steps>
+  <Step title="Open the Folder Dialog">
+    Use either method to open a folder:
+    
+    **Method 1: Menu Bar**
+    - Click **File** → **Open Folder**
+    
+    **Method 2: Keyboard Shortcut**
+    - Press **Cmd+O** (macOS) or **Ctrl+O** (Windows/Linux)
+    
+    A native file picker dialog will appear.
+  </Step>
+  
+  <Step title="Select a Folder">
+    Navigate to any folder containing code files and click **Open**.
+    
+    <Tip>
+      Try opening the Code Editor Thing project itself to explore the source code!
+    </Tip>
+    
+    The sidebar will populate with your folder structure. Hidden files (starting with `.`) are automatically filtered out.
+  </Step>
+</Steps>
 
-### Step 3: Go live
+## Editing Files
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+Once you have a folder open, you can start editing files:
 
-## Next steps
+<Steps>
+  <Step title="Open a File">
+    In the sidebar, click on any file to open it. For example, click `package.json`.
+    
+    The file will:
+    - Open in a new tab at the top of the editor
+    - Display with syntax highlighting based on the file extension
+    - Show line numbers and code folding
+    
+    ```json
+    {
+      "name": "code-editor-thing",
+      "version": "1.0.0",
+      "private": true,
+      "main": "dist-electron/main.cjs"
+    }
+    ```
+  </Step>
+  
+  <Step title="Make Changes">
+    Click in the editor and start typing. The editor supports:
+    
+    - **Syntax highlighting** for JavaScript, TypeScript, Python, Rust, C++, HTML, CSS, JSON, and Markdown
+    - **Autocomplete** with Ctrl+Space
+    - **Multiple cursors** with Cmd+Click
+    - **Undo/Redo** with Cmd+Z / Cmd+Shift+Z
+    
+    Modified files show a dot indicator in their tab to indicate unsaved changes.
+  </Step>
+  
+  <Step title="Save Your Changes">
+    Save the file using:
+    
+    **Keyboard Shortcut (Recommended)**
+    ```
+    Cmd+S (macOS) or Ctrl+S (Windows/Linux)
+    ```
+    
+    The code that handles saving is in `src/App.tsx:10-18`:
+    
+    ```tsx
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+          e.preventDefault();
+          handleSave();
+        }
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [handleSave]);
+    ```
+    
+    The dot indicator disappears once the file is saved.
+  </Step>
+  
+  <Step title="Work with Multiple Files">
+    Open multiple files to work with tabs:
+    
+    1. Click another file in the sidebar (e.g., `README.md`)
+    2. Switch between tabs by clicking them
+    3. Close tabs by clicking the **×** button
+    
+    <Note>
+      Active tabs are highlighted, and you can have as many files open as you need.
+    </Note>
+  </Step>
+</Steps>
 
-Now that you have your docs running, explore these key features:
+## Changing Themes
 
-<CardGroup cols={2}>
+Code Editor Thing includes 9 beautiful themes:
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
+<CodeGroup>
+```text Light Themes
+Light - Classic VS Code light theme
+GitHub Light - GitHub's light theme
+```
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
+```text Dark Themes
+Dark - Classic VS Code dark theme
+GitHub Dark - GitHub's dark theme
+Dracula - Popular purple-tinted theme
+Monokai - Classic Monokai colors
+Nord - Arctic, north-bluish theme
+One Dark Pro - Atom's iconic theme
+Tokyo Night - Night-themed blue palette
+```
+</CodeGroup>
 
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
+<Steps>
+  <Step title="Open Theme Selector">
+    Look for the paintbrush icon in the bottom-left info bar. Click the dropdown next to it.
+  </Step>
+  
+  <Step title="Select a Theme">
+    Choose from the 9 available themes:
+    
+    - **Light** - White background, classic syntax colors
+    - **Dark** - Dark gray background, VS Code colors
+    - **GitHub Dark** - True black background, GitHub colors
+    - **GitHub Light** - Clean white with GitHub palette
+    - **Dracula** - Purple and pink accents on dark
+    - **Monokai** - Iconic green and yellow on dark
+    - **Nord** - Cool blue and teal tones
+    - **One Dark Pro** - Balanced pastels on dark
+    - **Tokyo Night** - Vibrant blues and purples
+    
+    The theme selector is implemented in `src/components/theme-selector.tsx:5-23`.
+  </Step>
+  
+  <Step title="Instant Theme Switch">
+    The entire UI updates immediately:
+    
+    - **Editor background and text** colors change
+    - **Sidebar** adapts to the theme
+    - **Syntax highlighting** updates with theme-specific colors
+    - **Status bar** changes accent color
+    - **Tab backgrounds** match the theme
+    
+    <Tip>
+      Each theme has carefully matched colors defined in `src/lib/themes.ts` covering editor, sidebar, syntax highlighting, and UI elements.
+    </Tip>
+  </Step>
+</Steps>
 
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
+## Using Keyboard Shortcuts
 
-</CardGroup>
+Boost your productivity with these built-in shortcuts:
+
+| Shortcut | Action | Platform |
+|----------|--------|----------|
+| **Cmd/Ctrl+O** | Open folder | All |
+| **Cmd/Ctrl+S** | Save current file | All |
+| **Cmd+B** | Toggle sidebar | macOS |
+| **Cmd+Shift+T** | Toggle terminal | macOS |
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  The keyboard shortcuts are registered in `electron/main.ts:39-45` using Electron's global shortcuts API.
 </Note>
+
+## Real-World Workflow Example
+
+Here's a complete workflow from start to finish:
+
+<Steps>
+  <Step title="Launch & Open Project">
+    ```bash
+    npm run electron:dev
+    ```
+    
+    Press **Cmd+O** and select your project folder.
+  </Step>
+  
+  <Step title="Browse Files">
+    Use the sidebar to navigate. Click on `src/App.tsx` to open it.
+  </Step>
+  
+  <Step title="Edit Code">
+    Make changes to the file:
+    
+    ```tsx
+    // Before
+    <h1 className="text-2xl mb-4">Code Editor</h1>
+    
+    // After
+    <h1 className="text-2xl mb-4">My Custom Editor</h1>
+    ```
+  </Step>
+  
+  <Step title="Save & View">
+    Press **Cmd+S** to save. Since you're running in development mode, Vite will hot-reload your changes instantly!
+  </Step>
+  
+  <Step title="Customize Appearance">
+    Switch to the **Tokyo Night** theme for a vibrant blue color scheme, or **Dracula** for purple accents.
+  </Step>
+  
+  <Step title="Open Multiple Files">
+    Open `package.json`, `README.md`, and `tsconfig.json` to compare them side-by-side using tabs.
+  </Step>
+</Steps>
+
+## Understanding the Architecture
+
+As you use Code Editor Thing, here's what's happening under the hood:
+
+### File Operations
+
+When you open or save files, the React frontend communicates with Electron's main process:
+
+```typescript
+// Reading a file (src/lib/editor-context.tsx:72)
+const content = await window.electronAPI.readFile(item.path);
+
+// Saving a file (src/lib/editor-context.tsx:102)
+window.electronAPI.saveFile(activeFilePath, file.content);
+```
+
+The Electron main process handles actual file system operations in `electron/main.ts:123-138`:
+
+```typescript
+ipcMain.handle('read-file', async (_event, filePath: string) => {
+  try {
+    return fs.readFileSync(filePath, 'utf-8');
+  } catch {
+    return '';
+  }
+});
+
+ipcMain.handle('save-file', async (_event, filePath: string, content: string) => {
+  try {
+    fs.writeFileSync(filePath, content, 'utf-8');
+    return true;
+  } catch {
+    return false;
+  }
+});
+```
+
+### Syntax Highlighting
+
+CodeMirror 6 provides syntax highlighting using language extensions imported in `src/components/Editor.tsx:1`:
+
+- JavaScript/TypeScript: `@codemirror/lang-javascript`
+- Python: `@codemirror/lang-python`
+- Rust: `@codemirror/lang-rust`
+- C++: `@codemirror/lang-cpp`
+- HTML: `@codemirror/lang-html`
+- CSS: `@codemirror/lang-css`
+- JSON: `@codemirror/lang-json`
+- Markdown: `@codemirror/lang-markdown`
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Explore Themes" icon="palette">
+    Try all 9 themes and find your favorite. Each theme has unique syntax colors!
+  </Card>
+  
+  <Card title="Customize the Code" icon="code">
+    Code Editor Thing is open source. Modify `src/lib/themes.ts` to create your own theme.
+  </Card>
+  
+  <Card title="Build for Production" icon="package">
+    Ready to distribute? Run `npm run electron:build` to create a distributable app.
+  </Card>
+  
+  <Card title="Extend Functionality" icon="puzzle">
+    Add new features by exploring the React components in `src/components/`.
+  </Card>
+</CardGroup>
+
+<Tip>
+  The entire source code is well-structured and commented. Start in `src/App.tsx` to understand the component hierarchy!
+</Tip>

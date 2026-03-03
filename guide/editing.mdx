@@ -1,0 +1,161 @@
+---
+title: Editing Code
+description: Learn about the editor features, syntax highlighting, and language support in Code Editor Thing
+---
+
+## Editor Overview
+
+Code Editor Thing is built on **CodeMirror 6**, a powerful and extensible code editor framework. It provides a fast, feature-rich editing experience with modern editor capabilities.
+
+## Core Features
+
+The editor comes with essential features enabled by default:
+
+- **Line numbers** with subtle gutters
+- **Syntax highlighting** for supported languages
+- **Auto-indentation** and bracket matching
+- **Undo/redo** with full history support
+- **Keyboard shortcuts** following standard conventions
+- **Theme support** with dynamic color schemes
+
+## Syntax Highlighting
+
+The editor automatically detects the language based on file extension and applies appropriate syntax highlighting.
+
+### Color-Coded Elements
+
+Syntax highlighting includes:
+
+| Element | Description |
+|---------|-------------|
+| **Keywords** | Language keywords like `if`, `function`, `class` |
+| **Strings** | Text literals and string values |
+| **Comments** | Single-line and multi-line comments (italicized) |
+| **Numbers** | Numeric literals and booleans |
+| **Functions** | Function names and calls |
+| **Variables** | Variable names and identifiers |
+| **Types** | Type annotations and class names |
+| **Operators** | Mathematical and logical operators |
+
+Colors adapt automatically based on your selected theme (see [Themes](/guide/themes)).
+
+## Supported Languages
+
+Code Editor Thing supports syntax highlighting and language features for:
+
+<Tabs>
+  <Tab title="JavaScript & TypeScript">
+    - **Extensions**: `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`
+    - **Features**: JSX support, TypeScript syntax
+    - **Library**: `@codemirror/lang-javascript`
+  </Tab>
+  
+  <Tab title="Python">
+    - **Extensions**: `.py`
+    - **Library**: `@codemirror/lang-python`
+  </Tab>
+  
+  <Tab title="Web Languages">
+    - **HTML**: `.html`, `.htm` - `@codemirror/lang-html`
+    - **CSS**: `.css` - `@codemirror/lang-css`
+    - **JSON**: `.json` - `@codemirror/lang-json`
+  </Tab>
+  
+  <Tab title="Other Languages">
+    - **Markdown**: `.md`, `.markdown` - `@codemirror/lang-markdown`
+    - **Rust**: `.rs` - `@codemirror/lang-rust`
+    - **C++**: `.cpp`, `.h`, `.cc` - `@codemirror/lang-cpp`
+  </Tab>
+</Tabs>
+
+### Language Detection
+
+The editor uses file extensions to determine the appropriate language mode:
+
+```typescript
+// From src/lib/utils.ts
+export function getLanguageExtension(filename: string) {
+  const ext = filename.split(".").pop()?.toLowerCase();
+  switch (ext) {
+    case "js":
+    case "jsx":
+    case "mjs":
+    case "cjs":
+      return javascript({ jsx: true });
+    case "ts":
+    case "tsx":
+      return javascript({ jsx: true, typescript: true });
+    case "py":
+      return python();
+    // ... more languages
+  }
+}
+```
+
+## Saving Files
+
+Save your changes using the standard keyboard shortcut:
+
+<Note>
+**Keyboard Shortcut**: `Cmd+S` (macOS) or `Ctrl+S` (Windows/Linux)
+</Note>
+
+### How Saving Works
+
+When you save a file:
+
+1. The editor captures the current document content
+2. Sends it to the Electron main process via IPC
+3. Writes the content to disk using Node.js file system APIs
+4. Confirms the save operation
+
+```javascript
+// From electron/main.ts
+ipcMain.handle('save-file', async (_event, filePath: string, content: string) => {
+  try {
+    fs.writeFileSync(filePath, content, 'utf-8')
+    return true
+  } catch {
+    return false
+  }
+})
+```
+
+## Editor Configuration
+
+The editor is configured with:
+
+- **Font**: Geist Mono, Fira Code, JetBrains Mono, or system monospace
+- **Font Size**: 14px
+- **Line Height**: 28px (content) / 21px (scrollbar)
+- **Padding**: 12px around content area
+- **Tab Size**: Automatic based on file type
+
+## Editor Shortcuts
+
+Common editing shortcuts work as expected:
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl+Z` | Undo |
+| `Cmd/Ctrl+Shift+Z` | Redo |
+| `Cmd/Ctrl+S` | Save file |
+| `Cmd/Ctrl+A` | Select all |
+| `Cmd/Ctrl+C` | Copy |
+| `Cmd/Ctrl+V` | Paste |
+| `Cmd/Ctrl+X` | Cut |
+
+<Note>
+CodeMirror provides additional shortcuts for advanced editing. Press `F1` in the editor to see all available commands.
+</Note>
+
+## Theme Integration
+
+The editor dynamically adapts to your selected theme, updating:
+- Background and foreground colors
+- Syntax highlighting colors
+- Gutter appearance
+- Cursor color
+- Selection colors
+
+See the [Themes guide](/guide/themes) for more information on customizing your editor appearance.

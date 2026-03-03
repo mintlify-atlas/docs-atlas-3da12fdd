@@ -1,0 +1,380 @@
+---
+title: 'EditorContext'
+description: 'Global state management for the editor application'
+---
+
+## Overview
+
+The EditorContext provides centralized state management for the Code Editor Thing application. It manages file operations, UI state, theme selection, and terminal integration.
+
+## Components
+
+### EditorProvider
+
+Context provider component that wraps the application and provides editor state to all child components.
+
+<ParamField path="children" type="ReactNode" required>
+  Child components that will have access to the editor context
+</ParamField>
+
+```typescript
+import { EditorProvider } from './lib/editor-context';
+
+function App() {
+  return (
+    <EditorProvider>
+      <YourAppComponents />
+    </EditorProvider>
+  );
+}
+```
+
+### useEditor Hook
+
+Custom React hook that provides access to the editor context. Must be used within an `EditorProvider`.
+
+<ResponseField name="return" type="EditorContextType">
+  Object containing all editor state and methods
+</ResponseField>
+
+```typescript
+import { useEditor } from './lib/editor-context';
+
+function MyComponent() {
+  const editor = useEditor();
+  // Access editor state and methods
+}
+```
+
+<Warning>
+  `useEditor()` will throw an error if used outside of an `EditorProvider`. Always ensure your component tree is wrapped with the provider.
+</Warning>
+
+## EditorContextType Interface
+
+The complete interface for values returned by `useEditor()`.
+
+### UI State
+
+<ResponseField name="sidebarVisible" type="boolean">
+  Whether the file explorer sidebar is currently visible
+</ResponseField>
+
+<ResponseField name="setSidebarVisible" type="(v: boolean) => void">
+  Function to show/hide the sidebar
+</ResponseField>
+
+<ResponseField name="terminalVisible" type="boolean">
+  Whether the integrated terminal is currently visible
+</ResponseField>
+
+<ResponseField name="setTerminalVisible" type="(v: boolean) => void">
+  Function to show/hide the terminal
+</ResponseField>
+
+### File Management
+
+<ResponseField name="fileTree" type="FileItem[]">
+  Array of files and directories in the current workspace
+  
+  <Expandable title="FileItem structure">
+    <ResponseField name="name" type="string">
+      File or directory name
+    </ResponseField>
+    
+    <ResponseField name="path" type="string">
+      Absolute file system path
+    </ResponseField>
+    
+    <ResponseField name="isDirectory" type="boolean">
+      Whether this item is a directory
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="setFileTree" type="(v: FileItem[]) => void">
+  Function to update the file tree
+</ResponseField>
+
+<ResponseField name="openFiles" type="OpenFile[]">
+  Array of currently open file tabs
+  
+  <Expandable title="OpenFile structure">
+    <ResponseField name="path" type="string">
+      Absolute file path
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      File name
+    </ResponseField>
+    
+    <ResponseField name="content" type="string">
+      Current file content
+    </ResponseField>
+    
+    <ResponseField name="modified" type="boolean">
+      Whether the file has unsaved changes
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="setOpenFiles" type="(v: OpenFile[]) => void">
+  Function to update the open files array
+</ResponseField>
+
+<ResponseField name="activeFilePath" type="string | null">
+  Path of the currently focused file, or `null` if no file is active
+</ResponseField>
+
+<ResponseField name="setActiveFilePath" type="(v: string | null) => void">
+  Function to set the active file
+</ResponseField>
+
+<ResponseField name="currentFolder" type="string | null">
+  Path of the currently open workspace folder, or `null` if none
+</ResponseField>
+
+<ResponseField name="setCurrentFolder" type="(v: string | null) => void">
+  Function to set the current workspace folder
+</ResponseField>
+
+### Theme Management
+
+<ResponseField name="selectedTheme" type="string">
+  ID of the currently selected theme (e.g., `"vs-dark"`, `"dracula"`)
+</ResponseField>
+
+<ResponseField name="setSelectedTheme" type="(v: string) => void">
+  Function to change the active theme
+</ResponseField>
+
+<ResponseField name="currentTheme" type="ThemeConfig">
+  Complete theme configuration object for the selected theme. See [Theme System](/api/themes) for details.
+</ResponseField>
+
+### Environment
+
+<ResponseField name="isElectron" type="boolean">
+  Whether the app is running in Electron environment (vs web browser)
+</ResponseField>
+
+### Event Handlers
+
+<ResponseField name="handleFileSelect" type="(item: FileItem) => Promise<void>">
+  Opens a file for editing. If the file is already open, switches to that tab. Ignores directories.
+  
+  <Expandable title="parameters">
+    <ParamField path="item" type="FileItem" required>
+      File item to open
+    </ParamField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="handleContentChange" type="(content: string) => void">
+  Updates the content of the currently active file and marks it as modified.
+  
+  <Expandable title="parameters">
+    <ParamField path="content" type="string" required>
+      New file content
+    </ParamField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="handleSave" type="() => Promise<void>">
+  Saves the currently active file to disk and marks it as unmodified.
+</ResponseField>
+
+<ResponseField name="handleCloseTab" type="(path: string) => void">
+  Closes a file tab. If it's the active file, clears the active file selection.
+  
+  <Expandable title="parameters">
+    <ParamField path="path" type="string" required>
+      Path of the file to close
+    </ParamField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="handleRefreshTree" type="(folderPath: string) => Promise<void>">
+  Refreshes the file tree for a given folder path.
+  
+  <Expandable title="parameters">
+    <ParamField path="folderPath" type="string" required>
+      Path to refresh
+    </ParamField>
+  </Expandable>
+</ResponseField>
+
+## Usage Examples
+
+### Basic File Operations
+
+```typescript
+import { useEditor } from './lib/editor-context';
+
+function FileExplorer() {
+  const { fileTree, handleFileSelect } = useEditor();
+  
+  return (
+    <ul>
+      {fileTree.map(item => (
+        <li key={item.path} onClick={() => handleFileSelect(item)}>
+          {item.isDirectory ? '📁' : '📄'} {item.name}
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
+### Saving Files
+
+```typescript
+import { useEditor } from './lib/editor-context';
+
+function SaveButton() {
+  const { handleSave, activeFilePath, openFiles } = useEditor();
+  
+  const activeFile = openFiles.find(f => f.path === activeFilePath);
+  const hasUnsavedChanges = activeFile?.modified;
+  
+  return (
+    <button 
+      onClick={handleSave}
+      disabled={!hasUnsavedChanges}
+    >
+      Save {hasUnsavedChanges && '*'}
+    </button>
+  );
+}
+```
+
+### Managing Open Files
+
+```typescript
+import { useEditor } from './lib/editor-context';
+
+function OpenFilesTabs() {
+  const { 
+    openFiles, 
+    activeFilePath, 
+    setActiveFilePath,
+    handleCloseTab 
+  } = useEditor();
+  
+  return (
+    <div>
+      {openFiles.map(file => (
+        <div 
+          key={file.path}
+          className={file.path === activeFilePath ? 'active' : ''}
+        >
+          <span onClick={() => setActiveFilePath(file.path)}>
+            {file.name} {file.modified && '*'}
+          </span>
+          <button onClick={() => handleCloseTab(file.path)}>×</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+### Toggling UI Elements
+
+```typescript
+import { useEditor } from './lib/editor-context';
+
+function ViewControls() {
+  const { 
+    sidebarVisible, 
+    setSidebarVisible,
+    terminalVisible,
+    setTerminalVisible 
+  } = useEditor();
+  
+  return (
+    <div>
+      <button onClick={() => setSidebarVisible(!sidebarVisible)}>
+        {sidebarVisible ? 'Hide' : 'Show'} Sidebar
+      </button>
+      <button onClick={() => setTerminalVisible(!terminalVisible)}>
+        {terminalVisible ? 'Hide' : 'Show'} Terminal
+      </button>
+    </div>
+  );
+}
+```
+
+### Theme Switching
+
+```typescript
+import { useEditor } from './lib/editor-context';
+import { THEMES } from './lib/themes';
+
+function ThemeSelector() {
+  const { selectedTheme, setSelectedTheme, currentTheme } = useEditor();
+  
+  return (
+    <select 
+      value={selectedTheme} 
+      onChange={(e) => setSelectedTheme(e.target.value)}
+      style={{
+        backgroundColor: currentTheme.editor.bg,
+        color: currentTheme.editor.fg
+      }}
+    >
+      {THEMES.map(theme => (
+        <option key={theme.id} value={theme.id}>
+          {theme.name}
+        </option>
+      ))}
+    </select>
+  );
+}
+```
+
+### Refreshing File Tree
+
+```typescript
+import { useEditor } from './lib/editor-context';
+
+function RefreshButton() {
+  const { currentFolder, handleRefreshTree } = useEditor();
+  
+  const handleRefresh = async () => {
+    if (currentFolder) {
+      await handleRefreshTree(currentFolder);
+    }
+  };
+  
+  return (
+    <button onClick={handleRefresh} disabled={!currentFolder}>
+      Refresh Files
+    </button>
+  );
+}
+```
+
+## State Management Patterns
+
+The EditorContext uses React's built-in state management with `useState` and `useContext`. State updates are batched for performance.
+
+### Automatic State Updates
+
+The provider automatically listens for Electron IPC events:
+
+- `folder-opened` - Updates `currentFolder` and `fileTree`
+- `toggle-sidebar` - Toggles `sidebarVisible`
+- `toggle-terminal` - Toggles `terminalVisible`
+
+### Manual State Updates
+
+All state setters are exposed for manual control when needed:
+
+```typescript
+const { setOpenFiles, setActiveFilePath } = useEditor();
+
+// Manually manage open files
+setOpenFiles(prev => [...prev, newFile]);
+setActiveFilePath(newFile.path);
+```

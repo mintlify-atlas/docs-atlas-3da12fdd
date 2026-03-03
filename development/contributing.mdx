@@ -1,0 +1,317 @@
+---
+title: Contributing
+description: How to contribute to Code Editor Thing
+---
+
+## Getting Started
+
+We welcome contributions to Code Editor Thing! Whether you're fixing bugs, adding features, or improving documentation, your help is appreciated.
+
+<Steps>
+  <Step title="Fork the Repository">
+    Create your own fork of the project to work on changes independently.
+  </Step>
+  
+  <Step title="Set Up Development Environment">
+    Clone your fork and install dependencies:
+    
+    ```bash
+    git clone https://github.com/your-username/code-editor-thing.git
+    cd code-editor-thing
+    npm install
+    ```
+  </Step>
+  
+  <Step title="Create a Feature Branch">
+    Create a branch for your changes:
+    
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
+    
+    Use descriptive branch names like:
+    - `feature/add-syntax-highlighting`
+    - `fix/file-save-error`
+    - `docs/update-readme`
+  </Step>
+</Steps>
+
+## Development Workflow
+
+### Making Changes
+
+<Steps>
+  <Step title="Start Development Server">
+    Run the app in development mode:
+    
+    ```bash
+    npm run dev
+    ```
+    
+    For testing Electron-specific features:
+    
+    ```bash
+    npm run electron:dev
+    ```
+  </Step>
+  
+  <Step title="Make Your Changes">
+    Edit the relevant files. The main areas are:
+    
+    - **Electron/Main Process**: `electron/main.ts`, `electron/preload.ts`
+    - **React Components**: `src/components/`
+    - **State Management**: `src/lib/editor-context.tsx`
+    - **Styling**: Tailwind classes in components
+    - **Editor Config**: `src/lib/utils.ts` for CodeMirror setup
+  </Step>
+  
+  <Step title="Test Your Changes">
+    Test thoroughly in both web and Electron environments:
+    
+    - File operations (open, edit, save)
+    - UI interactions (sidebar, tabs, theme switching)
+    - Keyboard shortcuts
+    - Terminal functionality (if modified)
+    - Edge cases (empty folders, large files, special characters)
+  </Step>
+</Steps>
+
+### Code Style
+
+<Note>
+  Follow the existing code style to maintain consistency across the codebase.
+</Note>
+
+#### TypeScript Conventions
+
+```typescript
+// Use explicit types for function parameters and return values
+function handleFileSelect(item: FileItem): Promise<void> {
+  // ...
+}
+
+// Use interfaces for object shapes
+interface EditorContextType {
+  openFiles: OpenFile[]
+  activeFilePath: string | null
+  handleSave: () => Promise<void>
+}
+
+// Prefer const over let
+const items = await readDirectory(path)
+
+// Use optional chaining
+window.electronAPI?.readFile(path)
+```
+
+#### React Conventions
+
+```tsx
+// Use functional components with hooks
+export default function Editor() {
+  const { openFiles, activeFilePath } = useEditor()
+  
+  // Extract complex logic into custom hooks
+  useEffect(() => {
+    // ...
+  }, [dependencies])
+  
+  return (
+    <div className="flex flex-col">
+      {/* ... */}
+    </div>
+  )
+}
+
+// Use destructuring for props
+function TreeItem({ item, level }: { item: FileItem; level: number }) {
+  // ...
+}
+```
+
+#### File Organization
+
+- **Components**: One component per file, matching filename
+- **Utilities**: Group related utilities in `src/lib/`
+- **Types**: Define in the same file or `src/lib/types.ts`
+- **Electron**: Keep main process code in `electron/`
+
+### Testing Locally
+
+<CodeGroup>
+
+```bash Type Checking
+# Run TypeScript compiler without emitting files
+npx tsc --noEmit
+```
+
+```bash Build Test
+# Ensure production build works
+npm run build
+npm run build:electron
+```
+
+```bash Electron Package Test
+# Test full packaging process
+npm run electron:build
+```
+
+</CodeGroup>
+
+#### Manual Testing Checklist
+
+<Check>Open a folder with nested directories</Check>
+<Check>Open multiple files in tabs</Check>
+<Check>Edit and save files</Check>
+<Check>Toggle sidebar (Cmd+B)</Check>
+<Check>Toggle terminal (Cmd+Shift+T)</Check>
+<Check>Test keyboard shortcuts (Cmd+S, Cmd+O)</Check>
+<Check>Switch themes</Check>
+<Check>Test with different file types (.js, .py, .md, etc.)</Check>
+<Check>Test file tree navigation</Check>
+
+## Submitting Changes
+
+<Steps>
+  <Step title="Commit Your Changes">
+    Write clear, concise commit messages:
+    
+    ```bash
+    git add .
+    git commit -m "Add syntax highlighting for Python files"
+    ```
+    
+    **Good commit messages:**
+    - `Fix: Prevent crash when saving untitled files`
+    - `Feature: Add keyboard shortcut for closing tabs`
+    - `Refactor: Extract theme logic into separate module`
+    - `Docs: Update installation instructions`
+  </Step>
+  
+  <Step title="Push to Your Fork">
+    Push your branch to GitHub:
+    
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+  </Step>
+  
+  <Step title="Create a Pull Request">
+    Open a pull request from your fork to the main repository.
+    
+    **PR Description Should Include:**
+    - What problem does this solve?
+    - What changes were made?
+    - How to test the changes
+    - Screenshots (for UI changes)
+    - Related issue numbers (if applicable)
+  </Step>
+</Steps>
+
+### Pull Request Example
+
+```markdown
+## Description
+Adds syntax highlighting support for Python files using CodeMirror's Python language mode.
+
+## Changes
+- Imported `@codemirror/lang-python` in `src/lib/utils.ts`
+- Updated `getLanguageExtension()` to detect `.py` files
+- Added Python to supported languages list
+
+## Testing
+1. Open a `.py` file
+2. Verify keywords, strings, and comments are highlighted
+3. Test with both light and dark themes
+
+## Screenshots
+[Before/After screenshots]
+
+Closes #42
+```
+
+## Contribution Ideas
+
+<CardGroup cols={2}>
+  <Card title="Bug Fixes" icon="bug">
+    - Fix reported issues
+    - Handle edge cases
+    - Improve error handling
+  </Card>
+  
+  <Card title="New Features" icon="sparkles">
+    - Additional language support
+    - Search/replace functionality
+    - Git integration
+    - Settings panel
+  </Card>
+  
+  <Card title="Performance" icon="gauge">
+    - Optimize large file handling
+    - Reduce bundle size
+    - Improve startup time
+  </Card>
+  
+  <Card title="Documentation" icon="book">
+    - Code comments
+    - API documentation
+    - User guides
+    - Architecture diagrams
+  </Card>
+</CardGroup>
+
+## Code Review Process
+
+After submitting a pull request:
+
+1. **Automated Checks**: Ensure builds pass (if CI is configured)
+2. **Code Review**: Maintainers review your code for quality and consistency
+3. **Feedback**: Address any requested changes
+4. **Merge**: Once approved, your PR will be merged
+
+## Areas to Explore
+
+If you're looking for ways to contribute, consider these areas:
+
+### Electron Integration
+- Menu customization (`electron/main.ts:50-85`)
+- Additional IPC handlers (`electron/main.ts:104-166`)
+- Native dialogs and OS integration
+- Window state persistence
+
+### Editor Features
+- Additional CodeMirror extensions (`src/components/Editor.tsx:23-42`)
+- Custom key bindings
+- Multi-cursor support
+- Code folding
+
+### UI/UX Improvements
+- Sidebar enhancements (`src/components/Sidebar.tsx`)
+- Tab management improvements (`src/components/open-files.tsx`)
+- Theme customization (`src/lib/themes.ts`)
+- Modal dialogs
+
+### State Management
+- File watcher integration (`src/lib/editor-context.tsx`)
+- Undo/redo for file operations
+- Session persistence
+- Recent files tracking
+
+## Getting Help
+
+<CardGroup cols={2}>
+  <Card title="Architecture Guide" icon="sitemap" href="/development/architecture">
+    Understand the codebase structure
+  </Card>
+  <Card title="Building Guide" icon="hammer" href="/development/building">
+    Learn about build processes
+  </Card>
+</CardGroup>
+
+<Note>
+  If you have questions or need help, open a discussion on GitHub or comment on relevant issues.
+</Note>
+
+## Thank You!
+
+Your contributions help make Code Editor Thing better for everyone. We appreciate your time and effort in improving this project.

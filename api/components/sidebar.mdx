@@ -1,0 +1,196 @@
+---
+title: Sidebar
+description: File tree navigation component with folder expansion and file selection
+---
+
+The `Sidebar` component displays a hierarchical file tree for navigating the opened folder. It supports expanding directories, displaying folder icons, and selecting files for editing.
+
+## Usage
+
+```tsx
+import Sidebar from '@/components/Sidebar';
+
+function App() {
+  return (
+    <EditorProvider>
+      <Sidebar />
+    </EditorProvider>
+  );
+}
+```
+
+## Features
+
+### File Tree Display
+
+The Sidebar renders a recursive tree structure of files and folders:
+
+```tsx
+{fileTree.map((item) => (
+  <TreeItem key={item.path} item={item} level={0} />
+))}
+```
+
+### Folder Navigation
+
+Folders can be expanded to reveal their contents. The component lazy-loads directory contents when expanded:
+
+```tsx
+const handleClick = async () => {
+  if (item.isDirectory) {
+    if (!expanded) {
+      const items = await window.electronAPI?.readDirectory(item.path);
+      if (items) {
+        setChildren(items.filter((i: FileItem) => !i.name.startsWith(".")));
+      }
+    }
+    setExpanded(!expanded);
+  } else {
+    handleFileSelect(item);
+  }
+};
+```
+
+### File Selection
+
+Clicking on a file triggers the `handleFileSelect` callback from the editor context, which opens the file in the editor.
+
+### Visual Indicators
+
+- **Folder icons**: `FolderOpen` when expanded, `FolderClosed` when collapsed
+- **Chevron icons**: `ChevronUp` when expanded, `ChevronDown` when collapsed
+- **Color differentiation**: Directories have full opacity, files have 50% opacity
+- **Indentation**: Each nesting level adds 15px of padding
+
+## TreeItem Component
+
+The internal `TreeItem` component handles individual file/folder rendering:
+
+### Props
+
+<ParamField path="item" type="FileItem" required>
+  File or directory information
+  
+  ```typescript
+  interface FileItem {
+    name: string;
+    path: string;
+    isDirectory: boolean;
+  }
+  ```
+</ParamField>
+
+<ParamField path="level" type="number" required>
+  Nesting depth for indentation calculation. Top-level items have `level={0}`
+</ParamField>
+
+### State
+
+<ParamField path="expanded" type="boolean">
+  Whether the folder is currently expanded (shows children)
+</ParamField>
+
+<ParamField path="children" type="FileItem[]">
+  Array of child items loaded when folder is expanded
+</ParamField>
+
+## Context Integration
+
+The Sidebar uses the `useEditor` hook to access:
+
+<ParamField path="fileTree" type="FileItem[]">
+  Root-level files and folders in the opened directory. Hidden files (starting with `.`) are filtered out
+</ParamField>
+
+<ParamField path="currentTheme" type="ThemeConfig">
+  Theme configuration for styling the sidebar
+  
+  ```typescript
+  interface ThemeConfig {
+    sidebar: {
+      bg: string;
+      fg: string;
+    };
+  }
+  ```
+</ParamField>
+
+<ParamField path="handleFileSelect" type="(item: FileItem) => Promise<void>">
+  Function called when a file is clicked. Opens the file in the editor
+</ParamField>
+
+## IPC Integration
+
+The Sidebar communicates with the Electron main process through the `electronAPI`:
+
+### readDirectory
+
+```typescript
+window.electronAPI.readDirectory(item.path): Promise<FileItem[]>
+```
+
+Reads the contents of a directory and returns an array of files and subdirectories.
+
+**IPC Channel**: `read-directory`
+
+**Parameters**:
+- `dirPath` (string): Absolute path to the directory
+
+**Returns**: Array of `FileItem` objects
+
+## Styling
+
+The sidebar uses theme-aware styling:
+
+```tsx
+<section
+  style={{
+    backgroundColor: currentTheme.sidebar.bg,
+    color: currentTheme.sidebar.fg,
+  }}
+>
+```
+
+### Layout
+
+- **Width**: Minimum 260px with horizontal scroll
+- **Height**: `calc(100% - 38px)` to accommodate InfoBar
+- **Padding**: Item indentation based on nesting level: `10 + level * 15px`
+
+## Hidden Files
+
+Files and folders starting with `.` are automatically filtered:
+
+```tsx
+items.filter((i: FileItem) => !i.name.startsWith("."))
+```
+
+## Example: Custom Integration
+
+```tsx
+import { EditorProvider } from '@/lib/editor-context';
+import Sidebar from '@/components/Sidebar';
+import Editor from '@/components/Editor';
+
+function IDE() {
+  return (
+    <EditorProvider>
+      <div className="flex h-screen">
+        <Sidebar />
+        <Editor />
+      </div>
+    </EditorProvider>
+  );
+}
+```
+
+## Reference
+
+**Source**: `src/components/Sidebar.tsx`
+
+**Dependencies**:
+- `lucide-react` - Icon components (ChevronDown, ChevronUp, FolderClosed, FolderOpen)
+- `electron/preload` - FileItem type definition
+
+**Related Components**:
+- `InfoBar` - Displayed at the bottom of the sidebar

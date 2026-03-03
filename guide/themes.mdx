@@ -1,0 +1,239 @@
+---
+title: Themes
+description: Customize the appearance of Code Editor Thing with built-in themes
+---
+
+## Available Themes
+
+Code Editor Thing includes **9 built-in themes** to match your preferences and reduce eye strain during long coding sessions.
+
+### Light Themes
+
+<Accordion title="Light (VS Code Light)">
+  
+**ID**: `vs`
+
+A clean, bright theme inspired by Visual Studio Code's default light theme.
+
+**Colors**:
+- Editor: White background with black text
+- Sidebar: White with subtle contrast
+- Status Bar: White
+- Keywords: Blue (`#0000ff`)
+- Strings: Red (`#a31515`)
+- Comments: Green (`#008000`)
+
+</Accordion>
+
+<Accordion title="GitHub Light">
+  
+**ID**: `github-light`
+
+The official GitHub light theme with familiar syntax colors.
+
+**Colors**:
+- Editor: Pure white (`#ffffff`)
+- Sidebar: Light gray (`#f6f8fa`)
+- Status Bar: GitHub blue (`#0969da`)
+- Keywords: Pink/red (`#d73a49`)
+- Strings: Dark blue (`#032f62`)
+- Comments: Gray (`#6a737d`)
+
+</Accordion>
+
+### Dark Themes
+
+<Accordion title="Dark (VS Code Dark)">
+  
+**ID**: `vs-dark`
+
+The classic Visual Studio Code dark theme.
+
+**Colors**:
+- Editor: Dark gray (`#1e1e1e`)
+- Sidebar: Slightly darker (`#252526`)
+- Status Bar: Blue (`#007acc`)
+- Keywords: Light blue (`#569cd6`)
+- Strings: Orange (`#ce9178`)
+- Comments: Green (`#6a9955`)
+
+</Accordion>
+
+<Accordion title="GitHub Dark">
+  
+**ID**: `github-dark`
+
+GitHub's modern dark theme optimized for reduced eye strain.
+
+**Colors**:
+- Editor: Very dark (`#0d1117`)
+- Sidebar: Pure black (`#010409`)
+- Status Bar: GitHub green (`#238636`)
+- Keywords: Coral (`#ff7b72`)
+- Strings: Light blue (`#a5d6ff`)
+- Functions: Purple (`#d2a8ff`)
+
+</Accordion>
+
+<Accordion title="Dracula">
+  
+**ID**: `dracula`
+
+The popular Dracula theme with vibrant purple and pink accents.
+
+**Colors**:
+- Editor: Dark purple-gray (`#282a36`)
+- Sidebar: Darker (`#21222c`)
+- Status Bar: Muted purple (`#6272a4`)
+- Keywords: Pink (`#ff79c6`)
+- Strings: Yellow (`#f1fa8c`)
+- Functions: Green (`#50fa7b`)
+
+</Accordion>
+
+<Accordion title="Monokai">
+  
+**ID**: `monokai`
+
+The iconic Monokai theme with high contrast colors.
+
+**Colors**:
+- Editor: Dark brown-gray (`#272822`)
+- Sidebar: Very dark (`#1e1f1c`)
+- Status Bar: Brown (`#75715d`)
+- Keywords: Pink (`#f92672`)
+- Strings: Yellow (`#e6db74`)
+- Functions: Green (`#a6e22e`)
+
+</Accordion>
+
+<Accordion title="Nord">
+  
+**ID**: `nord`
+
+A cool, arctic-inspired theme with blue tones.
+
+**Colors**:
+- Editor: Dark blue-gray (`#2e3440`)
+- Sidebar: Slightly lighter (`#3b4252`)
+- Status Bar: Light blue (`#88c0d0`)
+- Keywords: Blue (`#81a1c1`)
+- Strings: Green (`#a3be8c`)
+- Functions: Cyan (`#88c0d0`)
+
+</Accordion>
+
+<Accordion title="One Dark Pro">
+  
+**ID**: `one-dark-pro`
+
+Based on Atom's One Dark theme, popular among developers.
+
+**Colors**:
+- Editor: Dark gray (`#282c34`)
+- Sidebar: Darker (`#21252b`)
+- Status Bar: Purple (`#c678dd`)
+- Keywords: Purple (`#c678dd`)
+- Strings: Green (`#98c379`)
+- Functions: Blue (`#61afef`)
+
+</Accordion>
+
+<Accordion title="Tokyo Night">
+  
+**ID**: `tokyo-night`
+
+A modern dark theme inspired by Tokyo's night aesthetic.
+
+**Colors**:
+- Editor: Very dark blue (`#1a1b26`)
+- Sidebar: Nearly black (`#16161e`)
+- Status Bar: Blue (`#7aa2f7`)
+- Keywords: Purple (`#bb9af7`)
+- Strings: Green (`#9ece6a`)
+- Functions: Blue (`#7aa2f7`)
+
+</Accordion>
+
+## How to Switch Themes
+
+### Using the Theme Selector
+
+1. Look for the theme dropdown in the application (typically in the sidebar or settings)
+2. Click to open the theme selector
+3. Choose from the 9 available themes
+4. The editor updates immediately
+
+<Note>
+Theme preferences are saved locally, so your selection persists across sessions.
+</Note>
+
+## Theme Structure
+
+Each theme defines colors for different UI elements:
+
+### Editor Colors
+
+- **Background**: Main editor background
+- **Foreground**: Default text color
+- **Font Family**: Monospace font stack (Geist Mono, Fira Code, JetBrains Mono)
+
+### Sidebar Colors
+
+- **Background**: File tree background
+- **Foreground**: File/folder names
+
+### Syntax Highlighting
+
+Each theme specifies colors for:
+
+| Element | Usage |
+|---------|-------|
+| `keyword` | Reserved words (`if`, `function`, `class`) |
+| `string` | String literals |
+| `comment` | Code comments |
+| `number` | Numeric values |
+| `function` | Function names |
+| `operator` | Operators (`+`, `-`, `===`) |
+| `variable` | Variable names |
+| `type` | Type annotations |
+| `property` | Object properties |
+| `bracket` | Brackets and braces |
+| `tag` | HTML/XML tags |
+| `attribute` | HTML attributes |
+
+## Theme Implementation
+
+Themes are defined in `src/lib/themes.ts`:
+
+```typescript
+export const THEMES: ThemeConfig[] = [
+  {
+    id: "vs-dark",
+    name: "Dark",
+    editor: { bg: "#1e1e1e", fg: "#d4d4d4", fontFamily: CODE_FONT },
+    sidebar: { bg: "#252526", fg: "#cccccc" },
+    syntax: {
+      keyword: "#569cd6",
+      string: "#ce9178",
+      // ... more colors
+    }
+  },
+  // ... 8 more themes
+];
+```
+
+The editor dynamically applies these colors using CodeMirror's theme extension system.
+
+## Creating Custom Themes
+
+While the UI doesn't currently support custom themes, developers can add new themes by:
+
+1. Editing `src/lib/themes.ts`
+2. Adding a new `ThemeConfig` object to the `THEMES` array
+3. Defining all required color properties
+4. Rebuilding the application
+
+<Note>
+Future versions may include a theme editor or custom theme import functionality.
+</Note>

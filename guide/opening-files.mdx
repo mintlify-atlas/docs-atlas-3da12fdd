@@ -1,0 +1,111 @@
+---
+title: Opening Files
+description: Learn how to open folders, navigate files, and manage tabs in Code Editor Thing
+---
+
+## Opening a Folder
+
+To start working in Code Editor Thing, you first need to open a folder containing your project files.
+
+### Using the File Menu
+
+1. Click **File** in the menu bar
+2. Select **Open Folder**
+3. Choose a directory in the file picker dialog
+
+### Using Keyboard Shortcuts
+
+You can quickly open a folder using:
+
+<Note>
+**macOS/Linux:** `Cmd+O` or `Ctrl+O`
+
+**Windows:** `Ctrl+O`
+</Note>
+
+The editor uses Electron's native file dialog to let you select any directory on your system.
+
+## File Tree Navigation
+
+Once you've opened a folder, the sidebar displays all files and directories in a tree structure.
+
+### How Files Are Organized
+
+The file tree automatically sorts items:
+- **Directories** appear first (alphabetically)
+- **Files** appear after directories (alphabetically)
+
+This makes it easy to navigate your project structure at a glance.
+
+### Opening Files from the Tree
+
+Simply click on any file in the sidebar to open it in the editor. The file will:
+1. Load into a new tab (or reuse an existing tab if already open)
+2. Display its contents in the main editor area
+3. Apply syntax highlighting based on the file extension
+
+## Opening Multiple Files
+
+Code Editor Thing supports multiple open files simultaneously through a tab-based interface.
+
+### Tab System
+
+Each opened file gets its own tab at the top of the editor:
+- Click any tab to switch to that file
+- The active tab is visually highlighted
+- All open files remain in memory for quick switching
+
+### Tab Information
+
+Each tab displays:
+- The file name
+- A close button (×) to close the tab
+
+## Managing Tabs
+
+### Switching Between Files
+
+Click on any tab to make that file active in the editor. The editor will:
+- Display the file's contents
+- Apply the appropriate language support
+- Restore your editing position
+
+### Closing Tabs
+
+<Accordion title="Ways to close a tab">
+  
+**Click the × button**: Each tab has a close button on the right side
+
+**Close modified files**: Files with unsaved changes can be closed (changes are preserved in memory)
+
+</Accordion>
+
+### No Open Files
+
+If you close all tabs, the editor displays a helpful message:
+
+```
+Open a folder (File → Open Folder or Ctrl+O)
+```
+
+This reminds you how to get started with a new project.
+
+## Under the Hood
+
+Code Editor Thing uses Electron's IPC (Inter-Process Communication) to handle file operations:
+
+```javascript
+// From electron/main.ts
+async function openFolder() {
+  const result = await dialog.showOpenDialog(mainWindow!, {
+    properties: ['openDirectory']
+  })
+
+  if (!result.canceled && result.filePaths.length > 0) {
+    currentFolder = result.filePaths[0]
+    mainWindow?.webContents.send('folder-opened', currentFolder)
+  }
+}
+```
+
+The main process handles the native file dialog, while the renderer process updates the UI based on the selected folder.

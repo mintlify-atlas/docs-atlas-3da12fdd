@@ -1,0 +1,315 @@
+---
+title: 'Theme System'
+description: 'Theme configuration and customization API'
+---
+
+## Overview
+
+The theme system provides a complete theming solution with 9 pre-configured themes and support for custom theme creation. Each theme defines colors for the editor, sidebar, status bar, and syntax highlighting.
+
+## Available Themes
+
+The `THEMES` array contains all available theme configurations:
+
+<CardGroup cols={3}>
+  <Card title="Light (vs)" icon="sun">
+    Classic light theme with high contrast
+  </Card>
+  <Card title="Dark (vs-dark)" icon="moon">
+    Standard dark theme with blue accents
+  </Card>
+  <Card title="GitHub Dark" icon="github">
+    GitHub's dark color scheme
+  </Card>
+  <Card title="GitHub Light" icon="github">
+    GitHub's light color scheme
+  </Card>
+  <Card title="Dracula" icon="bat">
+    Popular purple-tinted dark theme
+  </Card>
+  <Card title="Monokai" icon="palette">
+    Classic Monokai color scheme
+  </Card>
+  <Card title="Nord" icon="snowflake">
+    Arctic-inspired blue theme
+  </Card>
+  <Card title="One Dark Pro" icon="code">
+    Atom-inspired dark theme
+  </Card>
+  <Card title="Tokyo Night" icon="building">
+    Japanese night-inspired theme
+  </Card>
+</CardGroup>
+
+## ThemeConfig Interface
+
+Defines the structure of a theme configuration object.
+
+<ResponseField name="id" type="string" required>
+  Unique identifier for the theme (e.g., `"vs-dark"`, `"dracula"`)
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Display name shown in the UI (e.g., `"Dark"`, `"Dracula"`)
+</ResponseField>
+
+<ResponseField name="editor" type="object" required>
+  Editor area styling configuration
+  
+  <Expandable title="properties">
+    <ResponseField name="bg" type="string" required>
+      Background color (hex format)
+    </ResponseField>
+    
+    <ResponseField name="fg" type="string" required>
+      Foreground/text color (hex format)
+    </ResponseField>
+    
+    <ResponseField name="fontFamily" type="string">
+      Optional font family override. Default: `"'Geist Mono', 'Fira Code', 'JetBrains Mono', Consolas, 'Courier New', monospace"`
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="sidebar" type="object" required>
+  File explorer sidebar styling
+  
+  <Expandable title="properties">
+    <ResponseField name="bg" type="string" required>
+      Background color (hex format)
+    </ResponseField>
+    
+    <ResponseField name="fg" type="string" required>
+      Text color (hex format)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="statusbar" type="object" required>
+  Bottom status bar styling
+  
+  <Expandable title="properties">
+    <ResponseField name="bg" type="string" required>
+      Background color (hex format)
+    </ResponseField>
+    
+    <ResponseField name="fg" type="string" required>
+      Text color (hex format)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="body" type="object">
+  Application body/background styling
+  
+  <Expandable title="properties">
+    <ResponseField name="bg" type="string" required>
+      Background color (hex format)
+    </ResponseField>
+    
+    <ResponseField name="fg" type="string" required>
+      Text color (hex format)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="openFilePill" type="object">
+  Open file tab styling
+  
+  <Expandable title="properties">
+    <ResponseField name="bg" type="string" required>
+      Background color (hex format)
+    </ResponseField>
+    
+    <ResponseField name="fg" type="string" required>
+      Text color (hex format)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="syntax" type="object" required>
+  Syntax highlighting color definitions
+  
+  <Expandable title="properties">
+    <ResponseField name="keyword" type="string" required>
+      Keywords like `if`, `const`, `return`
+    </ResponseField>
+    
+    <ResponseField name="string" type="string" required>
+      String literals
+    </ResponseField>
+    
+    <ResponseField name="comment" type="string" required>
+      Code comments
+    </ResponseField>
+    
+    <ResponseField name="number" type="string" required>
+      Numeric literals
+    </ResponseField>
+    
+    <ResponseField name="function" type="string" required>
+      Function names
+    </ResponseField>
+    
+    <ResponseField name="operator" type="string" required>
+      Operators like `+`, `=`, `&&`
+    </ResponseField>
+    
+    <ResponseField name="variable" type="string" required>
+      Variable names
+    </ResponseField>
+    
+    <ResponseField name="type" type="string" required>
+      Type names and annotations
+    </ResponseField>
+    
+    <ResponseField name="property" type="string" required>
+      Object properties
+    </ResponseField>
+    
+    <ResponseField name="bracket" type="string" required>
+      Brackets and braces
+    </ResponseField>
+    
+    <ResponseField name="tag" type="string" required>
+      HTML/XML tags
+    </ResponseField>
+    
+    <ResponseField name="attribute" type="string" required>
+      HTML/XML attributes
+    </ResponseField>
+    
+    <ResponseField name="heading" type="string" required>
+      Markdown headings
+    </ResponseField>
+    
+    <ResponseField name="emphasis" type="string" required>
+      Italic/emphasized text
+    </ResponseField>
+    
+    <ResponseField name="strong" type="string" required>
+      Bold/strong text
+    </ResponseField>
+    
+    <ResponseField name="link" type="string" required>
+      Hyperlinks
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Functions
+
+### getTheme
+
+Retrieves a theme configuration by ID. Falls back to the first theme (Light) if the ID is not found.
+
+<ParamField path="id" type="string" required>
+  Theme identifier to retrieve
+</ParamField>
+
+<ResponseField name="return" type="ThemeConfig">
+  The matching theme configuration object, or the default Light theme
+</ResponseField>
+
+```typescript
+import { getTheme } from './lib/themes';
+
+const darkTheme = getTheme('vs-dark');
+const customTheme = getTheme('tokyo-night');
+const fallback = getTheme('nonexistent'); // Returns Light theme
+```
+
+## Usage Examples
+
+### Accessing Theme Properties
+
+```typescript
+import { getTheme } from './lib/themes';
+
+const theme = getTheme('dracula');
+
+// Access editor colors
+console.log(theme.editor.bg);  // "#282a36"
+console.log(theme.editor.fg);  // "#f8f8f2"
+
+// Access syntax colors
+console.log(theme.syntax.keyword);  // "#ff79c6"
+console.log(theme.syntax.string);   // "#f1fa8c"
+```
+
+### Creating a Custom Theme
+
+```typescript
+import { ThemeConfig } from './lib/types';
+
+const customTheme: ThemeConfig = {
+  id: 'my-theme',
+  name: 'My Custom Theme',
+  editor: {
+    bg: '#1a1a1a',
+    fg: '#e0e0e0',
+    fontFamily: "'Fira Code', monospace"
+  },
+  sidebar: {
+    bg: '#0d0d0d',
+    fg: '#cccccc'
+  },
+  statusbar: {
+    bg: '#007acc',
+    fg: '#ffffff'
+  },
+  syntax: {
+    keyword: '#569cd6',
+    string: '#ce9178',
+    comment: '#6a9955',
+    number: '#b5cea8',
+    function: '#dcdcaa',
+    operator: '#d4d4d4',
+    variable: '#9cdcfe',
+    type: '#4ec9b0',
+    property: '#9cdcfe',
+    bracket: '#ffd700',
+    tag: '#569cd6',
+    attribute: '#9cdcfe',
+    heading: '#569cd6',
+    emphasis: '#ce9178',
+    strong: '#ce9178',
+    link: '#3794ff'
+  }
+};
+```
+
+### Using with EditorContext
+
+```typescript
+import { useEditor } from './lib/editor-context';
+
+function ThemeSelector() {
+  const { currentTheme, setSelectedTheme } = useEditor();
+  
+  return (
+    <div style={{ 
+      backgroundColor: currentTheme.editor.bg,
+      color: currentTheme.editor.fg 
+    }}>
+      <button onClick={() => setSelectedTheme('dracula')}>
+        Switch to Dracula
+      </button>
+    </div>
+  );
+}
+```
+
+## Theme List
+
+All available theme IDs for use with `getTheme()` or `setSelectedTheme()`:
+
+- `vs` - Light
+- `vs-dark` - Dark
+- `github-dark` - GitHub Dark
+- `github-light` - GitHub Light
+- `dracula` - Dracula
+- `monokai` - Monokai
+- `nord` - Nord
+- `one-dark-pro` - One Dark Pro
+- `tokyo-night` - Tokyo Night

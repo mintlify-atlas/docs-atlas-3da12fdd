@@ -1,0 +1,204 @@
+---
+title: Editor
+description: Code editor component powered by CodeMirror with syntax highlighting and language detection
+---
+
+The `Editor` component is the main code editing interface, built on top of CodeMirror 6. It provides syntax highlighting, language detection, theme support, and real-time content change handling.
+
+## Usage
+
+```tsx
+import Editor from '@/components/Editor';
+
+function App() {
+  return (
+    <EditorProvider>
+      <Editor />
+    </EditorProvider>
+  );
+}
+```
+
+## Features
+
+### Syntax Highlighting
+
+The Editor automatically detects file language based on file extension and applies appropriate syntax highlighting:
+
+- JavaScript/TypeScript (`.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`)
+- Python (`.py`)
+- HTML (`.html`, `.htm`)
+- CSS (`.css`)
+- JSON (`.json`)
+- Markdown (`.md`, `.markdown`)
+- Rust (`.rs`)
+
+### Language Detection
+
+Language extensions are loaded dynamically using the `getLanguageExtension()` utility:
+
+```tsx
+const langExt = getLanguageExtension(activeFile.name);
+if (langExt) {
+  extensions.push(langExt);
+}
+```
+
+### Content Change Handling
+
+The editor tracks document changes and updates the file state:
+
+```tsx
+EditorView.updateListener.of((update) => {
+  if (update.docChanged) {
+    handleContentChange(update.state.doc.toString());
+  }
+})
+```
+
+### Theme Support
+
+Custom themes are applied using CodeMirror extensions:
+
+```tsx
+const extensions = [
+  createThemeExtension(currentTheme.editor.bg, currentTheme.editor.fg),
+  createSyntaxHighlighting(currentTheme.syntax),
+];
+```
+
+## CodeMirror Extensions
+
+The Editor uses the following CodeMirror extensions:
+
+<ParamField path="basicSetup" type="Extension">
+  Provides essential editor features (line numbers, bracket matching, etc.)
+</ParamField>
+
+<ParamField path="history()" type="Extension">
+  Enables undo/redo functionality
+</ParamField>
+
+<ParamField path="keymap" type="Extension">
+  Configures keyboard shortcuts using `defaultKeymap` and `historyKeymap`
+</ParamField>
+
+<ParamField path="createThemeExtension" type="(bg: string, fg: string) => Extension">
+  Custom theme extension for background and foreground colors
+</ParamField>
+
+<ParamField path="createSyntaxHighlighting" type="(syntax: SyntaxConfig) => Extension">
+  Applies syntax highlighting based on theme configuration
+</ParamField>
+
+<ParamField path="EditorView.updateListener" type="Extension">
+  Listens for document changes and triggers content updates
+</ParamField>
+
+<ParamField path="getLanguageExtension" type="(filename: string) => Extension | null">
+  Returns the appropriate language extension based on file extension
+</ParamField>
+
+## Context Integration
+
+The Editor component relies on the `useEditor` hook from the EditorContext:
+
+### Consumed Properties
+
+<ParamField path="openFiles" type="OpenFile[]">
+  Array of currently open files
+  
+  ```typescript
+  interface OpenFile {
+    path: string;
+    name: string;
+    content: string;
+    modified: boolean;
+  }
+  ```
+</ParamField>
+
+<ParamField path="activeFilePath" type="string | null">
+  Path of the currently active file being edited
+</ParamField>
+
+<ParamField path="setActiveFilePath" type="(path: string | null) => void">
+  Function to set the active file path
+</ParamField>
+
+<ParamField path="handleCloseTab" type="(path: string) => void">
+  Function to close a file tab
+</ParamField>
+
+<ParamField path="handleContentChange" type="(content: string) => void">
+  Function called when editor content changes. Updates the file's content and marks it as modified
+</ParamField>
+
+<ParamField path="currentTheme" type="ThemeConfig">
+  Current theme configuration object
+  
+  ```typescript
+  interface ThemeConfig {
+    editor: { bg: string; fg: string; };
+    syntax: {
+      keyword: string;
+      string: string;
+      comment: string;
+      // ... more syntax colors
+    };
+  }
+  ```
+</ParamField>
+
+## State Management
+
+The component uses React refs to maintain CodeMirror instances:
+
+```tsx
+const editorRef = useRef<HTMLDivElement>(null);
+const viewRef = useRef<EditorView | null>(null);
+```
+
+The editor view is recreated when:
+- Active file path changes
+- Active file name changes
+- Theme colors change
+
+## Empty State
+
+When no file is open, the editor displays:
+
+```tsx
+<p className="opacity-40 text-xl">
+  Open a folder (File → Open Folder or Ctrl+O)
+</p>
+```
+
+## Example: Full Integration
+
+```tsx
+import { EditorProvider } from '@/lib/editor-context';
+import Editor from '@/components/Editor';
+
+function CodeEditor() {
+  return (
+    <EditorProvider>
+      <div className="flex">
+        <Sidebar />
+        <Editor />
+      </div>
+    </EditorProvider>
+  );
+}
+```
+
+## Reference
+
+**Source**: `src/components/Editor.tsx`
+
+**Dependencies**:
+- `codemirror` - CodeMirror 6 core
+- `@codemirror/commands` - Editor commands
+- `@codemirror/state` - Editor state management
+- `@codemirror/view` - Editor view
+- `@codemirror/lang-*` - Language support packages

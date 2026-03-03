@@ -1,0 +1,209 @@
+---
+title: Keyboard Shortcuts
+description: Complete reference of keyboard shortcuts available in Code Editor Thing
+---
+
+## Overview
+
+Code Editor Thing provides keyboard shortcuts for common operations, helping you work efficiently without reaching for the mouse.
+
+<Note>
+Shortcuts use `Cmd` on macOS and `Ctrl` on Windows/Linux unless otherwise specified.
+</Note>
+
+## File Operations
+
+| Shortcut | Action | Description |
+|----------|--------|-------------|
+| `Cmd+O` / `Ctrl+O` | Open Folder | Opens a dialog to select a folder to open in the editor |
+| `Cmd+S` / `Ctrl+S` | Save File | Saves the currently active file to disk |
+
+### Open Folder Details
+
+Defined in the File menu:
+
+```javascript
+// From electron/main.ts
+{
+  label: 'Open Folder',
+  accelerator: 'CmdOrCtrl+O',
+  click: () => openFolder()
+}
+```
+
+This shortcut triggers Electron's native folder picker dialog.
+
+## View Management
+
+| Shortcut | Action | Description |
+|----------|--------|-------------|
+| `Cmd+B` / `Command+B` | Toggle Sidebar | Shows or hides the file tree sidebar |
+| `Cmd+Shift+T` / `Command+Shift+T` | Toggle Terminal | Shows or hides the integrated terminal |
+
+### Toggle Sidebar
+
+Registered as a global shortcut:
+
+```javascript
+// From electron/main.ts
+globalShortcut.register('Command+B', () => { 
+  mainWindow?.webContents.send('toggle-sidebar')
+})
+```
+
+Also available in the View menu:
+
+```javascript
+{
+  label: 'Toggle Sidebar',
+  accelerator: 'Command+B',
+  click: () => mainWindow?.webContents.send('toggle-sidebar')
+}
+```
+
+### Toggle Terminal
+
+Registered as a global shortcut:
+
+```javascript
+// From electron/main.ts
+globalShortcut.register('Command+Shift+T', () => { 
+  mainWindow?.webContents.send('toggle-terminal')
+})
+```
+
+Also available in the View menu:
+
+```javascript
+{
+  label: 'Toggle Terminal',
+  accelerator: 'Command+Shift+T',
+  click: () => mainWindow?.webContents.send('toggle-terminal')
+}
+```
+
+## Editor Shortcuts
+
+These shortcuts are provided by CodeMirror and work within the editor:
+
+### Editing
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd+Z` / `Ctrl+Z` | Undo |
+| `Cmd+Shift+Z` / `Ctrl+Shift+Z` | Redo |
+| `Cmd+A` / `Ctrl+A` | Select All |
+| `Cmd+C` / `Ctrl+C` | Copy |
+| `Cmd+X` / `Ctrl+X` | Cut |
+| `Cmd+V` / `Ctrl+V` | Paste |
+
+### Navigation
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd+Home` / `Ctrl+Home` | Go to start of document |
+| `Cmd+End` / `Ctrl+End` | Go to end of document |
+| `Cmd+ArrowLeft` | Go to start of line |
+| `Cmd+ArrowRight` | Go to end of line |
+| `Alt+ArrowLeft` | Move cursor one word left |
+| `Alt+ArrowRight` | Move cursor one word right |
+
+### Selection
+
+| Shortcut | Action |
+|----------|--------|
+| `Shift+ArrowKey` | Extend selection |
+| `Cmd+Shift+ArrowLeft` | Select to start of line |
+| `Cmd+Shift+ArrowRight` | Select to end of line |
+| `Alt+Shift+ArrowLeft` | Select word left |
+| `Alt+Shift+ArrowRight` | Select word right |
+
+## Developer Tools
+
+| Shortcut | Action | Description |
+|----------|--------|-------------|
+| `Cmd+Alt+I` / `Ctrl+Shift+I` | Toggle DevTools | Opens Electron/Chrome developer tools |
+
+Available in the View menu:
+
+```javascript
+// From electron/main.ts
+{
+  label: 'View',
+  submenu: [
+    // ...
+    { role: 'toggleDevTools' }
+  ]
+}
+```
+
+## Application Shortcuts
+
+| Shortcut | Action | Platform |
+|----------|--------|----------|
+| `Cmd+Q` | Quit Application | macOS |
+| `Alt+F4` | Quit Application | Windows/Linux |
+
+Defined in the File menu:
+
+```javascript
+// From electron/main.ts
+{
+  label: 'File',
+  submenu: [
+    { label: 'Open Folder', accelerator: 'CmdOrCtrl+O', click: () => openFolder() },
+    { type: 'separator' },
+    { role: 'quit' }
+  ]
+}
+```
+
+## Global vs Editor Shortcuts
+
+<Accordion title="Understanding Shortcut Scope">
+
+**Global Shortcuts**: Registered with Electron and work anywhere in the application
+- `Cmd+B` (Toggle Sidebar)
+- `Cmd+Shift+T` (Toggle Terminal)
+
+**Menu Shortcuts**: Defined in the application menu
+- `Cmd+O` (Open Folder)
+- `Cmd+Q` (Quit)
+
+**Editor Shortcuts**: Handled by CodeMirror within the editor area
+- `Cmd+Z` (Undo)
+- `Cmd+S` (Save)
+- All text editing shortcuts
+
+</Accordion>
+
+## Customizing Shortcuts
+
+Currently, keyboard shortcuts are hardcoded in the application. To customize them:
+
+1. Edit `electron/main.ts`
+2. Modify the `accelerator` values in menu items
+3. Update `globalShortcut.register()` calls
+4. Rebuild the application
+
+<Note>
+Future versions may include a keyboard shortcut configuration UI.
+</Note>
+
+## Platform Differences
+
+### macOS
+- Uses `Command` key for most shortcuts
+- Menu bar always visible
+- `Cmd+Q` to quit
+
+### Windows/Linux
+- Uses `Ctrl` key for most shortcuts
+- Menu bar can be hidden
+- `Alt+F4` to quit
+
+### Shortcut Notation
+
+- `CmdOrCtrl`: Automatically uses `Cmd` on macOS, `Ctrl` elsewhere
+- `Command`: macOS-specific `Cmd` key
+- `Alt`: `Option` on macOS, `Alt` on Windows/Linux

@@ -1,0 +1,196 @@
+---
+title: Installation
+description: Set up Code Editor Thing on your local machine
+---
+
+# Installation
+
+Get Code Editor Thing running on your machine in just a few steps. This guide covers prerequisites, installation, and platform-specific considerations.
+
+## Prerequisites
+
+Before installing Code Editor Thing, ensure you have the following installed:
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node-js">
+    Version 16.x or higher recommended
+  </Card>
+  
+  <Card title="npm or pnpm" icon="package">
+    Package manager for installing dependencies
+  </Card>
+</CardGroup>
+
+<Note>
+  Code Editor Thing uses **Electron 33.x** and requires Node.js to build native modules like `node-pty` for terminal support.
+</Note>
+
+### Verify Your Setup
+
+Check your Node.js and npm versions:
+
+```bash
+node --version  # Should be v16.x or higher
+npm --version   # Should be v8.x or higher
+```
+
+## Installation Steps
+
+<Steps>
+  <Step title="Clone the Repository">
+    Clone the Code Editor Thing repository to your local machine:
+    
+    ```bash
+    git clone https://github.com/yourusername/code-editor-thing.git
+    cd code-editor-thing
+    ```
+    
+    Replace `yourusername` with the actual repository location.
+  </Step>
+  
+  <Step title="Install Dependencies">
+    Install all required npm packages:
+    
+    ```bash
+    npm install
+    ```
+    
+    This will install:
+    - **React 18.3** and **React DOM** for the UI
+    - **Electron 33.4** for the desktop framework
+    - **CodeMirror 6** and language extensions
+    - **Vite 6** for development and building
+    - **TypeScript 5.6** for type checking
+    - **Tailwind CSS 3.4** for styling
+    - **xterm.js** and **node-pty** for terminal support
+    - **Lucide React** for icons
+    
+    <Tip>
+      The `postinstall` script automatically runs `electron-builder install-app-deps` to rebuild native modules for your platform.
+    </Tip>
+  </Step>
+  
+  <Step title="Build Electron Main Process">
+    Compile the Electron main process:
+    
+    ```bash
+    npm run build:electron
+    ```
+    
+    This compiles `electron/main.ts` and `electron/preload.ts` into CommonJS modules that Electron can run.
+  </Step>
+  
+  <Step title="Verify Installation">
+    You're ready to go! Verify everything works by running the development server:
+    
+    ```bash
+    npm run electron:dev
+    ```
+    
+    This will:
+    1. Build the Electron main process
+    2. Start the Vite development server
+    3. Launch the Electron application
+    
+    <Note>
+      If the app window opens successfully, your installation is complete!
+    </Note>
+  </Step>
+</Steps>
+
+## Platform-Specific Notes
+
+### macOS
+
+On macOS, Code Editor Thing uses native keyboard shortcuts:
+
+- **Cmd+O** - Open folder
+- **Cmd+S** - Save file
+- **Cmd+B** - Toggle sidebar
+- **Cmd+Shift+T** - Toggle terminal
+
+The app builds as a `.dmg` installer when you run:
+
+```bash
+npm run electron:build
+```
+
+### Windows
+
+On Windows, the terminal defaults to **PowerShell**. You can modify this in `electron/main.ts:143`.
+
+Keyboard shortcuts use **Ctrl** instead of **Cmd**:
+
+- **Ctrl+O** - Open folder
+- **Ctrl+S** - Save file
+
+### Linux
+
+Linux users may need to install additional dependencies for Electron:
+
+```bash
+# Debian/Ubuntu
+sudo apt-get install libgtk-3-0 libnotify4 libnss3 libxss1 libxtst6 xdg-utils libatspi2.0-0 libdrm2 libgbm1 libxcb-dri3-0
+
+# Fedora
+sudo dnf install gtk3 libnotify nss libXScrnSaver libXtst xdg-utils at-spi2-atk
+```
+
+## Troubleshooting
+
+### Native Module Build Failures
+
+If `node-pty` fails to build:
+
+```bash
+# Install build tools
+npm install --global node-gyp
+
+# Rebuild native modules
+npm run postinstall
+```
+
+### Electron Window Doesn't Open
+
+Check that the Vite dev server is running:
+
+```bash
+# Terminal 1: Start Vite
+npm run dev
+
+# Terminal 2: Start Electron
+node start-electron.cjs
+```
+
+<Warning>
+  Make sure port **5173** is not in use by another application. Vite's dev server must be accessible for Electron to load the UI.
+</Warning>
+
+### TypeScript Errors
+
+Rebuild TypeScript declarations:
+
+```bash
+npm run build
+```
+
+## Available Scripts
+
+Once installed, you have access to these npm scripts:
+
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Start Vite development server |
+| `npm run build` | Build production React app |
+| `npm run build:electron` | Compile Electron main/preload |
+| `npm run electron:dev` | Run Electron in development mode |
+| `npm run electron:build` | Build production Electron app |
+| `npm run preview` | Preview production build |
+
+## Next Steps
+
+Now that Code Editor Thing is installed, learn how to use it:
+
+<Card title="Quickstart Guide" icon="rocket" href="/quickstart">
+  Run the app, open a folder, and start editing code
+</Card>
