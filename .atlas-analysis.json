@@ -1,0 +1,84 @@
+{
+  "projectType": "frontend",
+  "projectName": "Code Editor Thing",
+  "projectDescription": "A modern desktop code editor built with Electron, React, and CodeMirror featuring multiple themes and syntax highlighting",
+  "theme": "aspen",
+  "primaryColor": "#282c34",
+  "lightColor": "#61afef",
+  "darkColor": "#21252b",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "User Guide",
+            "pages": [
+              "guide/opening-files",
+              "guide/editing",
+              "guide/themes",
+              "guide/keyboard-shortcuts"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "development/architecture",
+              "development/building",
+              "development/contributing"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Components",
+            "pages": [
+              "api/components/editor",
+              "api/components/sidebar",
+              "api/components/terminal"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "api/themes",
+              "api/context",
+              "api/ipc-channels"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "CodeMirror-based editor with syntax highlighting",
+    "9 built-in themes (VS Code Dark/Light, GitHub, Dracula, Monokai, Nord, One Dark Pro, Tokyo Night)",
+    "File system integration for opening and editing local files",
+    "Integrated terminal support",
+    "Keyboard shortcuts (Cmd+S to save, Cmd+O to open folder, Cmd+B to toggle sidebar)",
+    "Multi-file tab management",
+    "Cross-platform desktop application (Electron)"
+  ],
+  "publicApiSurface": [
+    "EditorProvider (React Context)",
+    "useEditor() hook",
+    "Editor component",
+    "Sidebar component",
+    "Terminal component",
+    "ThemeSelector component",
+    "THEMES array (9 theme configurations)",
+    "getTheme(id: string)",
+    "IPC channels: read-directory, read-file, save-file, get-folder, create-terminal, terminal-input"
+  ]
+}
